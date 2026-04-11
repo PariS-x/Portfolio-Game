@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pari Sharma — Signal Quest</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0f;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;}
+
+/* ── SHELL ── */
+#shell{
+  position:relative;width:480px;height:480px;
+  border:3px solid #00ffcc;
+  box-shadow:0 0 0 2px #001a12,0 0 60px #00ffcc33,inset 0 0 80px #00000f;
+  background:#04040f;overflow:hidden;flex-shrink:0;
+  image-rendering:pixelated;
+}
+canvas#c{display:block;width:480px;height:480px;image-rendering:pixelated;}
+
+/* ── HUD ── */
+#hud{
+  position:absolute;top:0;left:0;right:0;height:22px;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 8px;background:rgba(0,3,18,0.95);
+  border-bottom:1px solid #00ffcc22;pointer-events:none;z-index:50;
+}
+.hud-l{font-size:5.5px;color:#00bb99;letter-spacing:0.5px;}
+#sig-wrap{display:flex;align-items:center;gap:4px;}
+#sig-lbl{font-size:5px;color:#224433;}
+#sig-bars{display:flex;gap:2px;align-items:flex-end;}
+.sbar{width:4px;background:#0d1f18;border:1px solid #1a332a;transition:background 0.4s,box-shadow 0.4s;}
+.sbar.on{background:#00ffcc;border-color:#00ffcc;box-shadow:0 0 5px #00ffcc;}
+.sbar:nth-child(1){height:5px;}.sbar:nth-child(2){height:8px;}.sbar:nth-child(3){height:11px;}.sbar:nth-child(4){height:14px;}
+
+/* ── TITLE SCREEN ── */
+#title{
+  position:absolute;inset:0;background:#000208;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:9px;z-index:200;cursor:pointer;
+}
+#title canvas{position:absolute;inset:0;width:480px;height:480px;}
+.t-logo{font-size:12px;color:#00ffcc;text-align:center;line-height:1.8;position:relative;z-index:1;letter-spacing:2px;}
+.t-name{font-size:9px;color:#fff;letter-spacing:3px;position:relative;z-index:1;margin-top:2px;}
+.t-sub{font-size:4.5px;color:#336655;line-height:2.6;text-align:center;position:relative;z-index:1;}
+.t-nobar{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:1;margin:6px 0;}
+.t-notxt{font-size:4.5px;color:#aa3311;}
+.tbars-wrap{display:flex;gap:3px;align-items:flex-end;}
+.tbar{width:6px;background:#111;border:1px solid #1a2a22;}
+.tbar:nth-child(1){height:7px;}.tbar:nth-child(2){height:11px;}.tbar:nth-child(3){height:16px;}.tbar:nth-child(4){height:21px;}
+.t-blink{font-size:6px;color:#00ffcc;animation:blink 1s step-end infinite;position:relative;z-index:1;margin-top:4px;}
+
+/* ── DIALOGUE BOX ── */
+#dialogue{
+  display:none;position:absolute;bottom:0;left:0;right:0;
+  background:rgba(0,2,16,0.97);border-top:2px solid #00ffcc;
+  padding:10px 14px 8px;z-index:100;min-height:84px;
+}
+#dlg-spk{font-size:4.5px;color:#00ffcc88;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #00ffcc1a;letter-spacing:2px;}
+#dlg-txt{font-size:6.5px;color:#ddf5ee;line-height:2.2;min-height:44px;white-space:pre-wrap;}
+#dlg-cont{position:absolute;bottom:7px;right:10px;font-size:4.5px;color:#00ffcc;animation:blink 0.8s step-end infinite;}
+#dlg-hint2{position:absolute;bottom:7px;left:10px;font-size:4.5px;color:#1a2d28;}
+
+/* ── FLOATING LABELS ── */
+.dlabel{position:absolute;font-family:'Press Start 2P',monospace;pointer-events:none;z-index:60;white-space:nowrap;transform:translateX(-50%);}
+
+/* ── TERMINAL ── */
+#terminal{
+  display:none;position:absolute;inset:0;
+  background:rgba(0,0,10,0.96);z-index:300;
+  align-items:center;justify-content:center;
+}
+#terminal.open{display:flex;}
+#term-win{
+  width:420px;height:340px;background:#04080e;
+  border:2px solid var(--tc,#00ffcc);
+  box-shadow:0 0 40px rgba(0,255,204,0.12);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+#term-bar{
+  background:#070e18;border-bottom:1px solid var(--tc,#00ffcc);
+  padding:5px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0;
+}
+.tdot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+.tdot.r{background:#ff5f57;}.tdot.y{background:#febc2e;}.tdot.g{background:#28c840;}
+#term-fname{font-size:5px;color:var(--tc,#00ffcc);opacity:.6;margin-left:auto;}
+#term-body{flex:1;padding:10px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:1px;scroll-behavior:smooth;}
+#term-body::-webkit-scrollbar{width:3px;}
+#term-body::-webkit-scrollbar-thumb{background:#00ffcc33;}
+.tl{font-size:6px;line-height:2.1;white-space:pre;}
+.tl-prompt{color:#00ffcc;}.tl-text{color:#aacfbb;}.tl-head{color:#ffcc44;}.tl-info{color:#77ccbb;}.tl-dim{color:#2a4035;}
+.tcursor{display:inline-block;width:6px;height:10px;background:var(--tc,#00ffcc);vertical-align:middle;animation:blink 0.65s step-end infinite;}
+#term-foot{
+  background:#070e18;border-top:1px solid var(--tc,#00ffcc);
+  padding:5px 12px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
+}
+#term-status{font-size:4.5px;color:var(--tc,#00ffcc);opacity:.7;}
+#term-close{font-size:4.5px;color:var(--tc,#00ffcc);cursor:pointer;padding:3px 7px;border:1px solid var(--tc,#00ffcc);opacity:.6;}
+#term-close:hover{opacity:1;background:rgba(0,255,204,.08);}
+
+/* ── FADE ── */
+#fade{position:absolute;inset:0;background:#000008;opacity:0;pointer-events:none;z-index:250;}
+
+/* ── VICTORY SCREEN ── */
+#victory{
+  display:none;position:absolute;inset:0;z-index:400;
+  background:#000208;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;cursor:pointer;
+}
+#victory.show{display:flex;}
+#vic-stars{position:absolute;inset:0;}
+.vic-line{position:relative;z-index:1;text-align:center;}
+#vic-status{font-size:5px;color:#336655;letter-spacing:3px;margin-bottom:4px;}
+#vic-title{font-size:10px;color:#00ffcc;line-height:2;letter-spacing:1px;}
+#vic-sub{font-size:5px;color:#fff;letter-spacing:2px;margin-top:4px;}
+#vic-detail{font-size:4px;color:#336655;line-height:2.8;text-align:center;margin-top:8px;}
+#vic-bars{display:flex;gap:4px;align-items:flex-end;justify-content:center;margin:10px 0;}
+.vbar{width:8px;background:#00ffcc;box-shadow:0 0 6px #00ffcc;}
+.vbar:nth-child(1){height:8px;}.vbar:nth-child(2){height:12px;}.vbar:nth-child(3){height:16px;}.vbar:nth-child(4){height:20px;}
+#vic-blink{font-size:5px;color:#00ffcc;animation:blink 1s step-end infinite;margin-top:6px;position:relative;z-index:1;}
+
+/* ── CONTROLS BAR ── */
+#ctrlbar{margin-top:7px;font-size:4px;color:#1a2520;letter-spacing:.4px;text-align:center;line-height:2.2;}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+<div id="shell">
+  <canvas id="c" width="240" height="240"></canvas>
+  <div id="hud">
+    <div class="hud-l" id="hud-loc">📡 NO SIGNAL</div>
+    <div id="sig-wrap">
+      <span id="sig-lbl">SIG</span>
+      <div id="sig-bars">
+        <div class="sbar" id="b0"></div><div class="sbar" id="b1"></div>
+        <div class="sbar" id="b2"></div><div class="sbar" id="b3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+  <div id="title">
+    <canvas id="sc" width="480" height="480"></canvas>
+    <div class="t-logo">SIGNAL QUEST</div>
+    <div class="t-name">PARI SHARMA</div>
+    <div class="t-sub">BTech Computer Engineering · NMIMS Mumbai<br>Robotics · AI · Embedded Systems · 2027</div>
+    <div class="t-nobar">
+      <div class="t-notxt">⚠ SIGNAL LOST — DEEP SPACE</div>
+      <div class="tbars-wrap"><div class="tbar"></div><div class="tbar"></div><div class="tbar"></div><div class="tbar"></div></div>
+    </div>
+    <div class="t-blink">▶ PRESS ENTER OR TAP TO LAUNCH</div>
+  </div>
+
+  <!-- DIALOGUE -->
+  <div id="dialogue">
+    <div id="dlg-spk">— TRANSMISSION —</div>
+    <div id="dlg-txt"></div>
+    <div id="dlg-hint2">ENTER / TAP</div>
+    <div id="dlg-cont">▼</div>
+  </div>
+
+  <!-- TERMINAL OVERLAY -->
+  <div id="terminal">
+    <div id="term-win">
+      <div id="term-bar">
+        <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+        <span id="term-fname">FILE.log</span>
+      </div>
+      <div id="term-body"></div>
+      <div id="term-foot">
+        <span id="term-status">● UPLINK ACTIVE</span>
+        <span id="term-close" onclick="closeTerm()">[ ESC — DISCONNECT ]</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="fade"></div>
+
+  <!-- VICTORY SCREEN -->
+  <div id="victory">
+    <canvas id="vic-stars" width="480" height="480"></canvas>
+    <div class="vic-line" id="vic-status">✓ ALL DATA NODES RECOVERED</div>
+    <div class="vic-line" id="vic-title">MISSION SUCCESS</div>
+    <div class="vic-line" id="vic-sub">CONNECTION REESTABLISHED</div>
+    <div id="vic-bars"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div>
+    <div class="vic-line" id="vic-detail">
+      SUIT UPLINK  ·  FULL SIGNAL  ·  4 / 4 BARS<br>
+      9 DATA NODES DECRYPTED<br>
+      PARI SHARMA  ·  ONLINE
+    </div>
+    <div id="vic-blink">▶ TAP OR PRESS ENTER TO RESTART</div>
+  </div>
+</div>
+<div id="ctrlbar">ARROWS / WASD — MOVE &nbsp;|&nbsp; ENTER / Z — INTERACT &nbsp;|&nbsp; ESC / X — BACK &nbsp;|&nbsp; TAP / SWIPE — TOUCH</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════ */
+const DATA={
+  education:{label:'EDUCATION',color:'#44aaff',signal:1,subs:{
+    academics:{label:'ACADEMICS',color:'#44aaff',file:'ACADEMICS.log',lines:[
+      {t:'head',v:'◈  ACADEMIC RECORD  ◈'},
+      {t:'info',v:'Institution  : SVKM\'S NMIMS MPSTME'},
+      {t:'info',v:'Degree       : BTech Computer Engg'},
+      {t:'info',v:'Location     : Mumbai, India'},
+      {t:'text',v:'CGPA         : 3.70 / 4.0'},
+      {t:'text',v:'Graduation   : May 2027 (Expected)'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  FOCUS AREAS  ◈'},
+      {t:'text',v:'  ► Robotics & Autonomous Systems'},
+      {t:'text',v:'  ► Artificial Intelligence & ML'},
+      {t:'text',v:'  ► Embedded Systems & Hardware'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  ACTIVITIES  ◈'},
+      {t:'text',v:'  ► AUV Robotics Club — Active'},
+      {t:'text',v:'  ► IBM Qiskit Advocate Program'},
+      {t:'info',v:'Prev: Jamnabai Narsee School 2018-21'},
+    ]},
+    honors:{label:'HONORS & AWARDS',color:'#44aaff',file:'HONORS.log',lines:[
+      {t:'head',v:'◈  COMPETITION WINS  ◈'},
+      {t:'info',v:'3rd Place — UVDC 2025'},
+      {t:'text',v:'  Underwater Vehicle Design Challenge'},
+      {t:'text',v:'  IIT Guwahati Techniche  [ 2025 ]'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  NATIONAL RECOGNITION  ◈'},
+      {t:'text',v:'  ► AutHer Awards — Best Manuscript'},
+      {t:'dim', v:'     JK Paper x Times of India'},
+      {t:'text',v:'  ► Certificate of Appreciation'},
+      {t:'dim', v:'     ICRTM-2025, Hansraj College, Delhi'},
+      {t:'text',v:'  ► DELPHI Program Graduate'},
+      {t:'dim', v:'     HITLAB Emerging Leaders Program'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  CREDENTIALS  ◈'},
+      {t:'info',v:'IBM Qiskit Advocate  Mar 2026 - Now'},
+    ]},
+    certs:{label:'CERTIFICATIONS',color:'#44aaff',file:'CERTS.log',lines:[
+      {t:'head',v:'◈  VERIFIED CREDENTIALS  ◈'},
+      {t:'info',v:'IBM — Basics of Quantum Information'},
+      {t:'dim', v:'  Issued: March 2026'},
+      {t:'text',v:'HITLAB — DELPHI Internship Cert'},
+      {t:'dim', v:'  Issued: December 2025'},
+      {t:'text',v:'Internshala — Machine Learning'},
+      {t:'dim', v:'  Grade: 92%  |  August 2024'},
+      {t:'text',v:'World Science U — Search for ET Life'},
+      {t:'dim', v:'  February 2025'},
+      {t:'text',v:'Certificate of Appreciation'},
+      {t:'dim', v:'  ICRTM-2025  |  February 2025'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  QUANTUM CLEARANCE  ◈'},
+      {t:'info',v:'STATUS: QISKIT ADVOCATE  ACTIVE  ✓'},
+    ]},
+  }},
+  experience:{label:'EXPERIENCE',color:'#ff8844',signal:2,subs:{
+    hitlab:{label:'HITLAB INTERNSHIP',color:'#ff8844',file:'HITLAB_INTERN.log',lines:[
+      {t:'head',v:'◈  HITLAB INTERNSHIP  ◈'},
+      {t:'info',v:'Role     : Research Intern (Remote)'},
+      {t:'info',v:'Location : New York, USA'},
+      {t:'info',v:'Period   : Aug 2025 – Apr 2026'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  MISSION REPORT  ◈'},
+      {t:'text',v:'  ► Digital health innovation research'},
+      {t:'text',v:'  ► FemTech market trends analysis'},
+      {t:'text',v:'  ► Biweekly emerging-tech reports'},
+      {t:'text',v:'  ► Responsible AI in healthcare'},
+      {t:'text',v:'  ► Global researcher collaboration'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  PROGRAM COMPLETED  ◈'},
+      {t:'info',v:'DELPHI — Developing Emerging Leaders'},
+      {t:'dim', v:'in Public Health Innovation'},
+    ]},
+    auv:{label:'TEAM AUV MPSTME',color:'#ff8844',file:'TEAM_AUV.log',lines:[
+      {t:'head',v:'◈  TEAM AUV MPSTME  ◈'},
+      {t:'info',v:'Role     : Programmer'},
+      {t:'info',v:'Location : Mumbai, India'},
+      {t:'info',v:'Period   : Apr 2024 – Present'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  MISSION LOG  ◈'},
+      {t:'text',v:'  ► Autonomous Underwater Vehicle dev'},
+      {t:'text',v:'  ► Real-time ROV control algorithms'},
+      {t:'text',v:'  ► Multimodal deep learning nav'},
+      {t:'text',v:'  ► 3rd Place UVDC IIT Guwahati 2025'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'head',v:'◈  SYSTEMS BUILT  ◈'},
+      {t:'text',v:'  ► Underwater Vision-Guided Nav'},
+      {t:'dim', v:'     OpenCV  ·  HSV  ·  MAVLink'},
+      {t:'text',v:'  ► Error-based closed-loop steering'},
+      {t:'dim', v:'     Works under varying turbidity'},
+    ]},
+    pubs:{label:'PUBLICATIONS',color:'#ff8844',file:'PUBLICATIONS.log',lines:[
+      {t:'head',v:'◈  PUBLISHED RESEARCH  ◈'},
+      {t:'info',v:'IJCRT — February 2024'},
+      {t:'text',v:'  Comparative Analysis: AI Image'},
+      {t:'dim', v:'  Generation Models (Peer-Reviewed)'},
+      {t:'dim', v:'  Stable Diffusion · DALL-E · WOMBO'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'ICRTM-2025 — February 2025'},
+      {t:'text',v:'  Graph Theory: Robotic Tactile Maps'},
+      {t:'dim', v:'  for the Visually Impaired'},
+      {t:'dim', v:'  Hansraj College, Delhi Univ.'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'ICAIISD25 / Springer — Dec 2025'},
+      {t:'text',v:'  Traffic Time Prediction ML: Mumbai'},
+      {t:'dim', v:'  MAE 2.56 min  ·  R² = 0.94'},
+      {t:'dim', v:'  Pseudo-LSTM · Temporal Features'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'text',v:'  Mars Terrain Clustering (2026)'},
+      {t:'dim', v:'  Belsare · Inamdar · Sharma (co-auth)'},
+    ]},
+  }},
+  projects:{label:'PROJECTS',color:'#44ff88',signal:3,subs:{
+    robotics:{label:'ROBOTICS & HW',color:'#44ff88',file:'ROBOTICS.log',lines:[
+      {t:'head',v:'◈  ROBOTICS & HARDWARE  ◈'},
+      {t:'info',v:'Wearable Biofeedback System'},
+      {t:'text',v:'  HR + noise sensor → overload detect'},
+      {t:'dim', v:'  Haptics · bone conduction audio'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Mars Rover Systems Simulator'},
+      {t:'text',v:'  Physics-based Pygame sim'},
+      {t:'dim', v:'  Traction · slip · rollover · A* nav'},
+      {t:'dim', v:'  [ Feb 2026  —  ONGOING ]'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Sensorless R2-D2 Pathfinding Droid'},
+      {t:'text',v:'  3D-printed Arduino robot'},
+      {t:'dim', v:'  A* 20x20 grid · Pygame · PIL maps'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Bluetooth-Controlled Arduino Car'},
+      {t:'dim', v:'  HC-05 · Python line-follow · OTP'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Multimodal Deep Learning AUV'},
+      {t:'dim', v:'  ResNet+UNet+CNN-LSTM+Kalman Filter'},
+    ]},
+    aiml:{label:'AI & ML',color:'#44ff88',file:'AI_ML.log',lines:[
+      {t:'head',v:'◈  AI & MACHINE LEARNING  ◈'},
+      {t:'info',v:'Travel Time Prediction — Mumbai'},
+      {t:'text',v:'  XGBoost · 2mo real traffic data'},
+      {t:'dim', v:'  MAE 3.77min  ·  R² 0.86–0.94'},
+      {t:'dim', v:'  Google Cloud · FastAPI · JS'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Aura — AI-Powered SOC Engine'},
+      {t:'text',v:'  RAG pipeline (Gemini API)'},
+      {t:'dim', v:'  HITL "Teach Aura" · CISA feeds'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Gesture 3D Dashboard'},
+      {t:'text',v:'  MediaPipe · Three.js STL viewer'},
+      {t:'dim', v:'  NASA Mars Weather · ML time-series'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Mars Terrain Risk Clustering'},
+      {t:'dim', v:'  ML classify · high-dim feature space'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Underwater Vision-Guided AUV'},
+      {t:'dim', v:'  OpenCV · HSV · ArduPilot/MAVLink'},
+    ]},
+    web:{label:'WEB & INTERACTIVE',color:'#44ff88',file:'WEB.log',lines:[
+      {t:'head',v:'◈  WEB & INTERACTIVE  ◈'},
+      {t:'info',v:'Matrix Rerum'},
+      {t:'text',v:'  Narrative gamified OS platform'},
+      {t:'dim', v:'  Player IS the OS — scheduling trials'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'DSA Code Compiler & CFG Analyzer'},
+      {t:'text',v:'  Tkinter GUI · C++ syntax check'},
+      {t:'dim', v:'  Auto-indent · CFG logical errors'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'The Psyche Quotient'},
+      {t:'text',v:'  Mental health · Star Wars gamified'},
+      {t:'dim', v:'  HTML/CSS/JS/Bootstrap/MySQL/PHP'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'Travel Time Web App'},
+      {t:'text',v:'  Real-time Mumbai route calculator'},
+      {t:'dim', v:'  Optimal windows for commuters'},
+      {t:'dim', v:'─────────────────────────────────'},
+      {t:'info',v:'All projects: github.com/PariS-x'},
+    ]},
+  }},
+};
+
+/* ═══════════════════════════════════════════════════════
+   CANVAS + MAP
+═══════════════════════════════════════════════════════ */
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const T=16,COLS=15,ROWS=15;
+const sc=document.getElementById('sc'),sx=sc.getContext('2d');
+const STARS=Array.from({length:180},()=>({
+  x:Math.random()*480,y:Math.random()*480,
+  r:Math.random()*1.5+0.2,ph:Math.random()*Math.PI*2,
+  sp:Math.random()*0.013+0.003
+}));
+
+const _=0,D='D',E='E',F='F',G='G',X='X';
+
+/* MAP: main hub — 3 wing doors along bottom */
+const MAP_MAIN=[
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,2,2,1,2,2,2,2,2,2,2,1,2,2,1],
+  [1,2,2,1,2,2,2,2,2,2,2,1,2,2,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,3,_,_,_,_,_,_,_,_,_,3,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,D,D,D,1,E,E,E,1,F,F,F,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+
+/* MAP: wing — 3 sub-doors */
+const MAP_WING=[
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,3,_,_,_,_,_,_,_,_,_,3,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,G,G,G,1,G,G,G,1,G,G,G,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+
+/* MAP: room — terminal console in center, player spawns below */
+const MAP_ROOM=[
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+  [1,2,_,_,_,_,_,_,_,_,_,_,_,2,1],
+  [1,2,_,_,_,_,_,_,_,_,_,_,_,2,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,X,X,X,_,_,_,_,_,1],
+  [1,_,_,_,_,_,X,X,X,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let S={screen:'title',wing:null,sub:null,px:7,py:9,pdir:2,pstep:0,signal:0,gt:0};
+const VISITED=new Set();
+const TOTAL_NODES=9;
+const vsc=document.getElementById('vic-stars');
+const vsx=vsc.getContext('2d');
+const VSTARS=Array.from({length:200},()=>({x:Math.random()*480,y:Math.random()*480,r:Math.random()*1.8+0.2,ph:Math.random()*Math.PI*2,sp:Math.random()*0.015+0.004}));
+
+function wCol(){return S.wing?DATA[S.wing].color:'#00ffcc';}
+function sCol(){return(S.sub&&S.wing)?DATA[S.wing].subs[S.sub].color:wCol();}
+
+/* ═══════════════════════════════════════════════════════
+   TILE RENDERING  — Pokémon Fire Red palette
+═══════════════════════════════════════════════════════ */
+function dTile(t,cx,cy){
+  const x=cx*T,y=cy*T;
+  /* floor */
+  if(t===0||t===_){
+    /* checker floor — light/dark alternating */
+    const even=(cx+cy)%2===0;
+    ctx.fillStyle=even?'#1a1a2e':'#16163a';
+    ctx.fillRect(x,y,T,T);
+    /* subtle star pixel */
+    if((cx*17+cy*31)%17===0){
+      ctx.fillStyle='rgba(200,220,255,0.18)';
+      ctx.fillRect(x+((cx*5+cy*3)%13)+1,y+((cx*3+cy*9)%13)+1,1,1);
+    }
+    return;
+  }
+  /* wall */
+  if(t===1){
+    ctx.fillStyle='#0b1633';ctx.fillRect(x,y,T,T);
+    /* brick face */
+    const row=cy%2;
+    ctx.fillStyle='#0e1e42';
+    if(row===0){
+      ctx.fillRect(x,y+2,T,5);ctx.fillRect(x,y+9,T,5);
+    } else {
+      ctx.fillRect(x+4,y+2,T-4,5);ctx.fillRect(x,y+2,4,5);
+      ctx.fillRect(x+4,y+9,T-4,5);ctx.fillRect(x,y+9,4,5);
+    }
+    ctx.fillStyle='#070f24';
+    ctx.fillRect(x,y+7,T,2);ctx.fillRect(x,y+14,T,2);
+    if(cx%3===0){ctx.fillStyle='#1a2a55';ctx.fillRect(x+1,y+3,2,3);}
+    return;
+  }
+  /* ceiling/ceiling strip */
+  if(t===2){
+    ctx.fillStyle='#060d20';ctx.fillRect(x,y,T,T);
+    /* glowing panel lines */
+    const p=0.3+0.3*Math.sin(S.gt*0.018+cx*0.4+cy*0.2);
+    ctx.fillStyle=`rgba(120,160,255,${p})`;
+    ctx.fillRect(x+1,y+3,T-2,1);
+    ctx.fillRect(x+1,y+11,T-2,1);
+    ctx.fillStyle='#08142e';ctx.fillRect(x+1,y+5,T-2,5);
+    ctx.strokeStyle='#0c1840';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,T-1,T-1);
+    return;
+  }
+  /* console/beacon */
+  if(t===3){
+    ctx.fillStyle='#060d1a';ctx.fillRect(x,y,T,T);
+    ctx.fillStyle='#0e1a2c';ctx.fillRect(x+1,y+1,T-2,T-2);
+    ['#ff4040','#40ff80','#4090ff','#ffee00'].forEach((c,i)=>{
+      const on=Math.floor(S.gt*0.05+i*1.5)%4<3;
+      ctx.fillStyle=on?c:'#181828';
+      ctx.fillRect(x+2+i*3,y+3,2,2);
+    });
+    ctx.fillStyle='#1c2c40';
+    ctx.fillRect(x+1,y+8,T-2,2);ctx.fillRect(x+1,y+12,T-2,2);
+    return;
+  }
+  /* doors */
+  if(t===D){dDoor(x,y,'#44aaff','EDUC');return;}
+  if(t===E){dDoor(x,y,'#ff8844','EXPR');return;}
+  if(t===F){dDoor(x,y,'#44ff88','PROJ');return;}
+  if(t===G){dDoor(x,y,wCol(),'');return;}
+  /* terminal */
+  if(t===X){
+    const c=sCol(),p=0.55+0.45*Math.sin(S.gt*0.07);
+    ctx.fillStyle='#050a10';ctx.fillRect(x,y,T,T);
+    ctx.fillStyle='#081016';ctx.fillRect(x+1,y+1,T-2,T-5);
+    /* screen glow */
+    ctx.fillStyle=c;ctx.globalAlpha=0.12*p;ctx.fillRect(x+2,y+2,T-4,T-8);ctx.globalAlpha=1;
+    /* scanlines */
+    ctx.fillStyle=c;ctx.globalAlpha=0.5*p;
+    for(let r=0;r<4;r++)ctx.fillRect(x+2,y+2+r*2,T-4,1);
+    ctx.globalAlpha=1;
+    /* base */
+    ctx.fillStyle='#0a1620';ctx.fillRect(x+5,y+T-4,6,2);ctx.fillRect(x+3,y+T-2,T-6,2);
+    ctx.strokeStyle=c;ctx.globalAlpha=0.7*p;ctx.lineWidth=1;ctx.strokeRect(x+1,y+1,T-2,T-5);ctx.globalAlpha=1;
+    return;
+  }
+  ctx.fillStyle='#04040d';ctx.fillRect(x,y,T,T);
+}
+
+function dDoor(x,y,col,lbl){
+  const p=0.15+0.08*Math.sin(S.gt*0.04+x*0.07);
+  ctx.fillStyle='#020208';ctx.fillRect(x,y,T,T);
+  /* door frame */
+  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.strokeRect(x+1,y+1,T-2,T-2);
+  /* inner fill */
+  ctx.fillStyle=col;ctx.globalAlpha=p;ctx.fillRect(x+2,y+2,T-4,T-4);ctx.globalAlpha=1;
+  /* center gem */
+  ctx.fillStyle=col;ctx.fillRect(x+T/2-1,y+T/2-1,2,2);
+  /* corner bolts */
+  ctx.globalAlpha=0.55;ctx.fillStyle=col;
+  ctx.fillRect(x+2,y+2,2,1);ctx.fillRect(x+2,y+2,1,2);
+  ctx.fillRect(x+T-4,y+T-3,2,1);ctx.fillRect(x+T-3,y+T-4,1,2);
+  ctx.globalAlpha=1;
+}
+
+function getMap(){
+  if(S.screen==='main')return MAP_MAIN;
+  if(S.screen==='wing')return MAP_WING;
+  return MAP_ROOM;
+}
+function drawMap(){
+  const m=getMap();
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)dTile(m[r][c],c,r);
+}
+
+/* door glow underlines */
+function drawGlows(){
+  const a=0.5+0.28*Math.sin(S.gt*0.04);
+  let list=null;
+  if(S.screen==='main')list=[[1,'#44aaff'],[5,'#ff8844'],[9,'#44ff88']];
+  if(S.screen==='wing')list=[[1,wCol()],[5,wCol()],[9,wCol()]];
+  if(!list)return;
+  list.forEach(([c,col])=>{
+    ctx.fillStyle=col;ctx.globalAlpha=a*0.8;
+    ctx.fillRect(c*T,13*T,T*3,1);
+    ctx.globalAlpha=1;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   ASTRONAUT SPRITE  (Fire Red top-down style)
+═══════════════════════════════════════════════════════ */
+function drawAstro(tx,ty,step){
+  const x=tx*T,y=ty*T;
+  const sc=wCol();
+
+  /* legs — walk cycle */
+  ctx.fillStyle='#8fa0b0';
+  if(step%2===0){
+    ctx.fillRect(x+4,y+13,4,3);ctx.fillRect(x+9,y+13,4,3);
+    ctx.fillStyle='#2a3f55';ctx.fillRect(x+3,y+15,5,2);ctx.fillRect(x+8,y+15,5,2);
+  } else {
+    ctx.fillRect(x+3,y+13,4,4);ctx.fillRect(x+10,y+12,4,4);
+    ctx.fillStyle='#2a3f55';ctx.fillRect(x+2,y+16,5,2);ctx.fillRect(x+10,y+15,5,2);
+  }
+
+  /* body */
+  ctx.fillStyle='#c8d4e0';ctx.fillRect(x+3,y+6,10,8);
+  /* visor stripe */
+  ctx.fillStyle=sc;ctx.globalAlpha=0.7;ctx.fillRect(x+4,y+8,8,2);ctx.globalAlpha=1;
+
+  /* arms */
+  ctx.fillStyle='#a8b8c4';
+  ctx.fillRect(x+1,y+6,2,7);ctx.fillRect(x+13,y+6,2,7);
+  ctx.fillStyle='#7a8898';ctx.fillRect(x+1,y+6,2,2);ctx.fillRect(x+13,y+6,2,2);
+
+  /* helmet */
+  ctx.fillStyle='#8fa0b0';ctx.fillRect(x+2,y+1,12,6);
+  /* visor */
+  ctx.fillStyle='#001428';ctx.fillRect(x+3,y+2,10,4);
+  ctx.fillStyle='rgba(80,200,255,0.6)';ctx.fillRect(x+4,y+3,4,1);
+  ctx.fillStyle='rgba(80,200,255,0.25)';ctx.fillRect(x+4,y+4,2,1);
+
+  /* antenna */
+  ctx.fillStyle='#b0c0cc';ctx.fillRect(x+4,y+0,8,2);
+  ctx.fillStyle='#778899';ctx.fillRect(x+11,y-3,1,4);
+  const blink=S.signal>0&&Math.floor(S.gt*0.07)%2===0;
+  ctx.fillStyle=blink?'#00ffcc':'#ff3030';ctx.fillRect(x+11,y-4,1,1);
+
+  /* signal bars on suit */
+  for(let i=0;i<4;i++){
+    ctx.fillStyle=i<S.signal?'#00ffcc':'#1a2a22';
+    ctx.fillRect(x+5+i*2,y+11,1,2);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════ */
+function render(){
+  ctx.clearRect(0,0,240,240);
+  if(S.screen==='title')return;
+  drawMap();
+  drawGlows();
+  /* draw player in ALL screens including room */
+  drawAstro(S.px,S.py,S.pstep);
+}
+
+/* ═══════════════════════════════════════════════════════
+   FLOATING LABELS
+═══════════════════════════════════════════════════════ */
+let lblEls=[];
+function clearLabels(){lblEls.forEach(e=>e.remove());lblEls=[];}
+function addLabel(txt,col,xPx,bottomPx,sz,extra){
+  const el=document.createElement('div');
+  el.className='dlabel';
+  el.style.cssText=`left:${xPx}px;bottom:${bottomPx}px;font-size:${sz||6}px;color:${col};text-shadow:0 0 8px ${col};${extra||''}`;
+  el.textContent=txt;
+  document.getElementById('shell').appendChild(el);lblEls.push(el);
+}
+
+function buildLabels(){
+  clearLabels();
+  const rowBot=68;
+  if(S.screen==='main'){
+    [{txt:'🎓 EDUCATION',col:'#44aaff',px:80},
+     {txt:'💼 EXPERIENCE',col:'#ff8844',px:208},
+     {txt:'⚡ PROJECTS',col:'#44ff88',px:336}]
+    .forEach(d=>addLabel(d.txt,d.col,d.px,rowBot,5.5));
+  }
+  if(S.screen==='wing'&&S.wing){
+    const sec=DATA[S.wing];
+    const subs=Object.values(sec.subs);
+    [{px:80,i:0},{px:208,i:1},{px:336,i:2}].forEach(({px,i})=>{
+      if(subs[i])addLabel(subs[i].label,sec.color,px,rowBot,5);
+    });
+    const te=document.createElement('div');
+    te.style.cssText=`position:absolute;top:26px;left:0;right:0;text-align:center;font-family:'Press Start 2P',monospace;font-size:6px;color:${sec.color};text-shadow:0 0 10px ${sec.color};pointer-events:none;z-index:60;`;
+    te.textContent=`— ${sec.label} WING —`;
+    document.getElementById('shell').appendChild(te);lblEls.push(te);
+  }
+  if(S.screen==='room'&&S.wing&&S.sub){
+    const sub=DATA[S.wing].subs[S.sub];
+    const te=document.createElement('div');
+    te.style.cssText=`position:absolute;top:26px;left:0;right:0;text-align:center;font-family:'Press Start 2P',monospace;font-size:5.5px;color:${sub.color};text-shadow:0 0 8px ${sub.color};pointer-events:none;z-index:60;`;
+    te.textContent=`— ${sub.label} —`;
+    document.getElementById('shell').appendChild(te);lblEls.push(te);
+    /* hint above terminal */
+    const th=document.createElement('div');
+    th.style.cssText=`position:absolute;left:240px;bottom:220px;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:5px;color:${sub.color};pointer-events:none;z-index:60;animation:blink 1s step-end infinite;white-space:nowrap;`;
+    th.textContent='▲ PRESS ENTER';
+    document.getElementById('shell').appendChild(th);lblEls.push(th);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SIGNAL BARS
+═══════════════════════════════════════════════════════ */
+function setSignal(n){
+  S.signal=n;
+  for(let i=0;i<4;i++)document.getElementById('b'+i).classList.toggle('on',i<n);
+  const lbl=document.getElementById('sig-lbl');
+  if(n===0){lbl.textContent='NO SIG';lbl.style.color='#552211';}
+  else if(n<4){lbl.textContent='SIGNAL';lbl.style.color='#aa7733';}
+  else{lbl.textContent='FULL SIG';lbl.style.color='#00ffcc';}
+}
+
+/* ═══════════════════════════════════════════════════════
+   DIALOGUE
+═══════════════════════════════════════════════════════ */
+let DQ=[],DI=0,DT=null,DF='',DTYP=false;
+function showDlg(lines,spk){
+  DQ=lines;DI=0;
+  document.getElementById('dlg-spk').textContent='— '+(spk||'TRANSMISSION')+' —';
+  document.getElementById('dialogue').style.display='block';
+  typeNext();
+}
+function typeNext(){
+  const el=document.getElementById('dlg-txt');el.textContent='';
+  DF=DQ[DI];DTYP=true;let i=0;
+  if(DT)clearInterval(DT);
+  DT=setInterval(()=>{
+    if(i<DF.length){el.textContent+=DF[i++];}
+    else{clearInterval(DT);DT=null;DTYP=false;}
+  },16);
+}
+function advDlg(){
+  if(DTYP){clearInterval(DT);DT=null;DTYP=false;document.getElementById('dlg-txt').textContent=DF;return;}
+  DI++;if(DI>=DQ.length)closeDlg();else typeNext();
+}
+function closeDlg(){
+  document.getElementById('dialogue').style.display='none';
+  DQ=[];DTYP=false;if(DT){clearInterval(DT);DT=null;}
+}
+
+/* ═══════════════════════════════════════════════════════
+   TERMINAL
+═══════════════════════════════════════════════════════ */
+function openTerm(){
+  if(!S.wing||!S.sub)return;
+  const sub=DATA[S.wing].subs[S.sub];
+  const tw=document.getElementById('term-win');
+  tw.style.setProperty('--tc',sub.color);
+  document.getElementById('term-fname').textContent=sub.file;
+  document.getElementById('term-status').textContent='● UPLINK ACTIVE  —  '+sub.label;
+  document.getElementById('terminal').classList.add('open');
+  const body=document.getElementById('term-body');body.innerHTML='';
+  const boot=[
+    {t:'prompt',v:'> SCANNING FOR DATA NODES...'},
+    {t:'prompt',v:'> PACKET LOCK ACQUIRED  ✓'},
+    {t:'dim',   v:'  Decrypting '+sub.file},
+    {t:'dim',   v:'  ────────────────────────────────'},
+  ];
+  const all=[...boot,...sub.lines];
+  let idx=0;
+  function addLine(){
+    if(idx>=all.length){
+      const c=document.createElement('span');c.className='tcursor';body.appendChild(c);
+      body.scrollTop=body.scrollHeight;
+      /* mark this node visited */
+      const nodeKey=S.wing+':'+S.sub;
+      VISITED.add(nodeKey);
+      /* signal: 1 bar per wing sector (first visit of any node in that sector) */
+      const sec=DATA[S.wing];
+      const wingVisited=Object.keys(sec.subs).filter(k=>VISITED.has(S.wing+':'+k)).length;
+      /* use wing's signal value if entire wing done, else partial */
+      const newSig=Math.max(S.signal, wingVisited>=3?sec.signal:sec.signal-1);
+      if(newSig>S.signal)setTimeout(()=>setSignal(newSig),600);
+      /* check all 9 nodes done */
+      if(VISITED.size>=TOTAL_NODES){
+        setTimeout(()=>{setSignal(4);},700);
+        setTimeout(()=>showVictory(),2200);
+      }
+      return;
+    }
+    const ln=all[idx++];
+    const el=document.createElement('div');
+    el.className='tl tl-'+ln.t;el.textContent=ln.v;
+    body.appendChild(el);body.scrollTop=body.scrollHeight;
+    setTimeout(addLine,idx<5?90:35);
+  }
+  addLine();
+}
+function closeTerm(){
+  document.getElementById('terminal').classList.remove('open');
+  document.getElementById('term-body').innerHTML='';
+}
+
+/* ═══════════════════════════════════════════════════════
+   VICTORY
+═══════════════════════════════════════════════════════ */
+function showVictory(){
+  closeTerm();closeDlg();
+  const v=document.getElementById('victory');
+  v.classList.add('show');
+  /* flash title in */
+  const title=document.getElementById('vic-title');
+  title.style.opacity='0';
+  let fl=0;
+  const fi=setInterval(()=>{fl=Math.min(fl+0.08,1);title.style.opacity=fl;if(fl>=1)clearInterval(fi);},30);
+}
+function closeVictory(){
+  document.getElementById('victory').classList.remove('show');
+  /* full reset */
+  VISITED.clear();
+  setSignal(0);
+  S={screen:'main',wing:null,sub:null,px:7,py:9,pdir:2,pstep:0,signal:0,gt:S.gt};
+  buildLabels();
+  document.getElementById('hud-loc').textContent='📡 SECTOR HUB';
+  showDlg(['Welcome back.\n\nAll data restored.\nExplore again anytime.'],'SUIT AI');
+}
+document.getElementById('victory').addEventListener('click',closeVictory);
+document.getElementById('vic-blink').addEventListener('click',e=>{e.stopPropagation();closeVictory();});
+
+/* ═══════════════════════════════════════════════════════
+   SCENE TRANSITIONS
+═══════════════════════════════════════════════════════ */
+let fading=false;
+function fadeGo(cb){
+  if(fading)return;fading=true;
+  const f=document.getElementById('fade');let t=0;
+  const fi=setInterval(()=>{
+    t=Math.min(t+0.15,1);f.style.opacity=t;
+    if(t>=1){clearInterval(fi);cb();let t2=1;
+      const fo=setInterval(()=>{t2=Math.max(t2-0.15,0);f.style.opacity=t2;
+        if(t2<=0){clearInterval(fo);fading=false;}
+      },14);
+    }
+  },14);
+}
+
+function goTo(screen,wing,sub){
+  fadeGo(()=>{
+    closeDlg();S.screen=screen;
+    if(wing!==undefined)S.wing=wing;
+    if(sub!==undefined)S.sub=sub;
+    /* room: player spawns centered below terminal */
+    if(screen==='room'){S.px=7;S.py=11;}
+    else{S.px=7;S.py=9;}
+    S.pdir=2;
+    buildLabels();
+    const locMap={
+      main:'SECTOR HUB',
+      wing:wing?DATA[wing].label+' SECTOR':'',
+      room:sub&&wing?DATA[wing].subs[sub].label:''
+    };
+    document.getElementById('hud-loc').textContent='📡 '+locMap[screen];
+    if(screen==='room'){
+      setTimeout(()=>{
+        const sub_=DATA[S.wing].subs[S.sub];
+        showDlg([
+          sub_.label+'\n\nData node detected nearby.\nApproach the terminal\nand press ENTER\nto uplink.'
+        ],'SUIT AI');
+      },400);
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOVEMENT & COLLISION
+═══════════════════════════════════════════════════════ */
+function walkable(nx,ny){
+  if(nx<0||nx>=COLS||ny<0||ny>=ROWS)return false;
+  const t=getMap()[ny][nx];
+  return t!==1&&t!==2;
+}
+
+let moveRep=0;
+const K={};
+
+function tryMove(dx,dy,dir){
+  if(fading||DQ.length>0||document.getElementById('terminal').classList.contains('open'))return;
+  S.pdir=dir;const nx=S.px+dx,ny=S.py+dy;
+  if(!walkable(nx,ny))return;
+  S.px=nx;S.py=ny;S.pstep=(S.pstep+1)%4;
+  const t=getMap()[ny][nx];
+  if(S.screen==='main'){
+    if(t===D)enterWing('education');
+    else if(t===E)enterWing('experience');
+    else if(t===F)enterWing('projects');
+  }
+  if(S.screen==='wing'&&t===G)enterSub(nx);
+}
+
+function enterWing(wing){
+  const sec=DATA[wing];
+  showDlg([
+    `ENTERING ${sec.label} SECTOR\n\nThree data nodes inside.\nEach uplink restores\none bar of signal.`,
+    `Navigate to each\nterminal and connect.\n\nESC — return to hub.`
+  ],'SUIT AI');
+  setTimeout(()=>{closeDlg();goTo('wing',wing);},3200);
+}
+
+function enterSub(nx){
+  const subs=Object.keys(DATA[S.wing].subs);
+  const idx=nx>=5&&nx<=7?1:nx>=9&&nx<=11?2:0;
+  const sub=subs[idx],sub_=DATA[S.wing].subs[sub];
+  showDlg([
+    `${sub_.label}\n\nData node in range.\nApproach terminal\nand press ENTER.`
+  ],'SUIT AI');
+  setTimeout(()=>{closeDlg();goTo('room',S.wing,sub);},2200);
+}
+
+/* ═══════════════════════════════════════════════════════
+   INTERACT
+═══════════════════════════════════════════════════════ */
+function interact(){
+  if(DQ.length>0){advDlg();return;}
+  if(document.getElementById('terminal').classList.contains('open')){closeTerm();return;}
+  const dirs=[[0,-1],[1,0],[0,1],[-1,0]];
+  const[dx,dy]=dirs[S.pdir];const nx=S.px+dx,ny=S.py+dy;
+  if(nx<0||nx>=COLS||ny<0||ny>=ROWS)return;
+  const t=getMap()[ny][nx];
+  if(S.screen==='main'&&t===3)
+    showDlg([
+      'NAVIGATION CONSOLE\n\nSuit uplink: OFFLINE\nSignal bars: 0/4\n\nLocate the 3 sector wings\nto recover lost data.',
+      'EDUCATION ·  EXPERIENCE\nPROJECTS\n\nWalk into any door\nto enter a sector.'
+    ],'CONSOLE');
+  if(S.screen==='wing'&&t===3){
+    const sec=DATA[S.wing];
+    showDlg([
+      sec.label+' SECTOR\n\nThree data nodes here.\nFind each terminal.\n\nPress ESC to\nreturn to hub.'
+    ],'CONSOLE');
+  }
+  if(S.screen==='room'&&t===X)openTerm();
+}
+
+function goBack(){
+  if(document.getElementById('terminal').classList.contains('open')){closeTerm();return;}
+  if(DQ.length>0){closeDlg();return;}
+  if(S.screen==='room'){goTo('wing',S.wing);return;}
+  if(S.screen==='wing'){goTo('main');return;}
+}
+
+/* ═══════════════════════════════════════════════════════
+   INPUT
+═══════════════════════════════════════════════════════ */
+document.addEventListener('keydown',e=>{
+  const k=e.key;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','Enter','z','Z','Escape','x','X',' '].includes(k))e.preventDefault();
+  K[k]=true;
+  if(document.getElementById('victory').classList.contains('show')){
+    if(k==='Enter'||k===' ')closeVictory();
+    return;
+  }
+  if(S.screen==='title'){if(k==='Enter'||k===' ')startGame();return;}
+  if(k==='Enter'||k==='z'||k==='Z')interact();
+  if(k==='Escape'||k==='x'||k==='X')goBack();
+});
+document.addEventListener('keyup',e=>{K[e.key]=false;});
+
+let tx0=0,ty0=0;
+const shell=document.getElementById('shell');
+shell.addEventListener('touchstart',e=>{
+  tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;
+  if(S.screen==='title')startGame();
+},{passive:true});
+shell.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx0,dy=e.changedTouches[0].clientY-ty0;
+  if(Math.abs(dx)<15&&Math.abs(dy)<15){interact();return;}
+  if(DQ.length>0||document.getElementById('terminal').classList.contains('open'))return;
+  if(Math.abs(dx)>Math.abs(dy)){dx>0?tryMove(1,0,1):tryMove(-1,0,3);}
+  else{dy>0?tryMove(0,1,2):tryMove(0,-1,0);}
+},{passive:true});
+
+/* ═══════════════════════════════════════════════════════
+   GAME LOOP
+═══════════════════════════════════════════════════════ */
+function loop(ts){
+  S.gt=ts/16;
+  /* star field on title */
+  if(S.screen==='title'){
+    sx.clearRect(0,0,480,480);
+    STARS.forEach(s=>{
+      const a=0.15+0.7*(0.5+0.5*Math.sin(s.ph+ts/1000*s.sp));
+      sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      sx.fillStyle=`rgba(190,215,255,${a})`;sx.fill();
+    });
+  }
+  /* star field on victory screen */
+  if(document.getElementById('victory').classList.contains('show')){
+    vsx.clearRect(0,0,480,480);
+    VSTARS.forEach(s=>{
+      const a=0.1+0.8*(0.5+0.5*Math.sin(s.ph+ts/800*s.sp));
+      vsx.beginPath();vsx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      vsx.fillStyle=`rgba(0,255,204,${a*0.6})`;vsx.fill();
+    });
+  }
+  render();
+  /* movement repeat */
+  if(S.screen!=='title'&&DQ.length===0&&!fading&&!document.getElementById('terminal').classList.contains('open')){
+    moveRep++;const fire=moveRep===1||(moveRep>14&&moveRep%4===0);
+    if(fire){
+      if(K.ArrowUp||K.w)tryMove(0,-1,0);
+      else if(K.ArrowDown||K.s)tryMove(0,1,2);
+      else if(K.ArrowLeft||K.a)tryMove(-1,0,3);
+      else if(K.ArrowRight||K.d)tryMove(1,0,1);
+      else moveRep=0;
+    }
+    if(!K.ArrowUp&&!K.ArrowDown&&!K.ArrowLeft&&!K.ArrowRight&&!K.w&&!K.a&&!K.s&&!K.d)moveRep=0;
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ═══════════════════════════════════════════════════════
+   START
+═══════════════════════════════════════════════════════ */
+function startGame(){
+  document.getElementById('title').style.display='none';
+  setSignal(0);S.screen='main';S.px=7;S.py=9;
+  buildLabels();
+  document.getElementById('hud-loc').textContent='📡 SECTOR HUB';
+  setTimeout(()=>{
+    showDlg([
+      'SIGNAL LOST\n\nSuit uplink offline.\nYou are drifting in\ndeep space — zero\ncommunications.',
+      'Three data sectors\nare nearby:\n\n🎓 EDUCATION\n💼 EXPERIENCE\n⚡ PROJECTS',
+      'Walk through each door.\nFind the terminals inside\nand uplink your suit.\n\nRecover all data. 📡'
+    ],'DISTRESS BEACON');
+  },500);
+}
+
+document.getElementById('title').addEventListener('click',startGame);
+setSignal(0);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
