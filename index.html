@@ -2,1025 +2,1429 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pari Sharma — Signal Quest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>THE LAST ARCHIVE // PS-07</title>
+<meta name="description" content="Pari Sharma: robotics, AI and embedded systems research archive. Recover it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0f;}
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;}
-
-/* ── SHELL ── */
-#shell{
-  position:relative;width:480px;height:480px;
-  border:3px solid #00ffcc;
-  box-shadow:0 0 0 2px #001a12,0 0 60px #00ffcc33,inset 0 0 80px #00000f;
-  background:#04040f;overflow:hidden;flex-shrink:0;
-  image-rendering:pixelated;
+:root{
+  --bg:#030604;
+  --bg2:#07110b;
+  --panel:rgba(5,14,9,.96);
+  --phos:#8dffb0;
+  --phos2:#c8ffd9;
+  --dim:#4f9467;
+  --faint:#1d3a27;
+  --amber:#ffbf5a;
+  --red:#ff4d5e;
+  --cyan:#6ff6ff;
+  --mag:#ff4fd8;
+  --glow:0 0 6px rgba(141,255,176,.55);
+  --holo:-1px 0 rgba(255,79,216,.35), 1px 0 rgba(111,246,255,.35), 0 0 8px rgba(141,255,176,.35);
+  --pix:"VT323", ui-monospace, monospace;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --cur:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h2v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v2h-4v1h1v1h1v2h1v2h-2v-1h-1v-2h-1v-1h-1v-1h-1v1h-1v1h-2z' fill='%23030604'/%3E%3Cpath d='M2 2h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-3v1h1v2h1v2h-1v-2h-1v-2h-1v-1h-1v1h-1v1h-1z' fill='%238dffb0'/%3E%3C/svg%3E") 1 1, auto;
+  --curp:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h2v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v2h-4v1h1v1h1v2h1v2h-2v-1h-1v-2h-1v-1h-1v-1h-1v1h-1v1h-2z' fill='%23030604'/%3E%3Cpath d='M2 2h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-3v1h1v2h1v2h-1v-2h-1v-2h-1v-1h-1v1h-1v1h-1z' fill='%23ffbf5a'/%3E%3C/svg%3E") 1 1, pointer;
 }
-canvas#c{display:block;width:480px;height:480px;image-rendering:pixelated;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--phos);overflow:hidden}
+body{font-family:var(--mono);font-size:14px;line-height:1.55;cursor:var(--cur);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+a,button,.icon,.file,[data-open],.menu-item,.tb-btn,.wbtn,.xref{cursor:var(--curp)}
+button{font:inherit;color:inherit;background:none;border:none}
+::selection{background:var(--phos);color:var(--bg)}
 
-/* ── HUD ── */
-#hud{
-  position:absolute;top:0;left:0;right:0;height:22px;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:0 8px;background:rgba(0,3,18,0.95);
-  border-bottom:1px solid #00ffcc22;pointer-events:none;z-index:50;
+/* ---------- CRT SCREEN ---------- */
+#screen{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#0a1a10 0%,#040a06 55%,#010302 100%)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9000}
+#fx .scan{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.28) 3px,rgba(0,0,0,0) 4px);mix-blend-mode:multiply}
+#fx .vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.75) 100%);box-shadow:inset 0 0 120px rgba(0,0,0,.9)}
+#fx .roll{position:absolute;left:0;right:0;height:18vh;background:linear-gradient(to bottom,rgba(141,255,176,0),rgba(141,255,176,.05),rgba(141,255,176,0));animation:roll 7s linear infinite}
+#noise{position:absolute;inset:0;width:100%;height:100%;opacity:.07;image-rendering:pixelated}
+@keyframes roll{0%{top:-20vh}100%{top:110vh}}
+@keyframes flick{0%,100%{opacity:1}47%{opacity:1}48%{opacity:.93}50%{opacity:1}73%{opacity:.97}74%{opacity:1}}
+#screen{animation:flick 5s infinite}
+.glitch #desktop,.glitch #boot{animation:tear .22s steps(2) 1}
+@keyframes tear{
+  0%{transform:translate(0);filter:none;clip-path:none}
+  20%{transform:translate(-6px,1px) skewX(-2deg);filter:hue-rotate(40deg) saturate(1.6);clip-path:inset(12% 0 60% 0)}
+  40%{transform:translate(5px,-2px);clip-path:inset(55% 0 20% 0)}
+  60%{transform:translate(-3px,0) skewX(3deg);filter:hue-rotate(-30deg);clip-path:inset(30% 0 40% 0)}
+  80%{transform:translate(2px,1px);clip-path:none}
+  100%{transform:translate(0);filter:none;clip-path:none}
 }
-.hud-l{font-size:5.5px;color:#00bb99;letter-spacing:0.5px;}
-#sig-wrap{display:flex;align-items:center;gap:4px;}
-#sig-lbl{font-size:5px;color:#224433;}
-#sig-bars{display:flex;gap:2px;align-items:flex-end;}
-.sbar{width:4px;background:#0d1f18;border:1px solid #1a332a;transition:background 0.4s,box-shadow 0.4s;}
-.sbar.on{background:#00ffcc;border-color:#00ffcc;box-shadow:0 0 5px #00ffcc;}
-.sbar:nth-child(1){height:5px;}.sbar:nth-child(2){height:8px;}.sbar:nth-child(3){height:11px;}.sbar:nth-child(4){height:14px;}
+.holo{text-shadow:var(--holo)}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.cursor{display:inline-block;width:.6em;height:1.05em;background:var(--phos);vertical-align:-.15em;box-shadow:var(--glow);animation:blink 1s steps(1) infinite}
+.red{color:var(--red)} .amber{color:var(--amber)} .cyan{color:var(--cyan)} .dim{color:var(--dim)} .bright{color:var(--phos2)}
 
-/* ── TITLE SCREEN ── */
-#title{
-  position:absolute;inset:0;background:#000208;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:9px;z-index:200;cursor:pointer;
+/* ---------- BOOT ---------- */
+#boot{position:absolute;inset:0;z-index:50;padding:clamp(16px,4vw,48px);font-family:var(--pix);font-size:clamp(19px,2.3vw,26px);line-height:1.25;color:var(--phos);text-shadow:var(--holo);overflow:hidden;display:flex;flex-direction:column}
+#boot pre{font-family:inherit;white-space:pre-wrap;word-break:break-word}
+#boot .power{margin:auto;text-align:center}
+#boot .power .big{font-size:clamp(34px,6vw,64px);letter-spacing:.06em}
+#boot .power .sub{color:var(--dim);margin-top:10px}
+#bootlog{flex:1;overflow:hidden}
+#skip{position:absolute;right:clamp(12px,3vw,32px);bottom:clamp(12px,3vw,28px);font-family:var(--pix);font-size:20px;color:var(--dim);border:1px solid var(--faint);padding:4px 12px;background:rgba(0,0,0,.4);z-index:60}
+#skip:hover{color:var(--phos);border-color:var(--phos)}
+.welcome{margin:auto;text-align:center}
+.welcome h1{font-family:var(--pix);font-weight:400;font-size:clamp(40px,8vw,110px);line-height:1;letter-spacing:.04em;position:relative;display:inline-block}
+.welcome h1::before,.welcome h1::after{content:attr(data-t);position:absolute;inset:0;pointer-events:none}
+.welcome h1::before{color:var(--mag);opacity:.35;transform:translate(-3px,0);clip-path:inset(0 0 55% 0);animation:gl1 2.6s infinite steps(1)}
+.welcome h1::after{color:var(--cyan);opacity:.35;transform:translate(3px,0);clip-path:inset(50% 0 0 0);animation:gl2 3.1s infinite steps(1)}
+@keyframes gl1{0%,88%{transform:translate(-2px,0)}90%{transform:translate(-9px,-2px);clip-path:inset(10% 0 70% 0)}94%{transform:translate(6px,1px);clip-path:inset(40% 0 30% 0)}}
+@keyframes gl2{0%,84%{transform:translate(2px,0)}86%{transform:translate(8px,2px);clip-path:inset(70% 0 5% 0)}91%{transform:translate(-5px,0);clip-path:inset(20% 0 50% 0)}}
+.welcome .go{margin-top:28px;font-size:clamp(20px,2.6vw,28px)}
+.welcome .go button{font-family:var(--pix);font-size:inherit;color:var(--bg);background:var(--phos);padding:2px 16px;box-shadow:0 0 18px rgba(141,255,176,.6);margin-top:14px}
+.welcome .go button:hover{background:var(--phos2)}
+.bar{letter-spacing:0}
+
+/* ---------- DESKTOP ---------- */
+#desktop{position:absolute;inset:0;display:none}
+#wall{position:absolute;inset:0 0 40px 0;overflow:hidden;pointer-events:none;display:flex;align-items:center;justify-content:center}
+#wall pre{font-family:var(--pix);font-size:clamp(14px,1.6vw,20px);line-height:1.1;color:rgba(141,255,176,.13);text-shadow:0 0 10px rgba(141,255,176,.12);margin-left:10vw}
+#wall .stamp{position:absolute;right:28px;bottom:18px;font-family:var(--pix);font-size:18px;color:rgba(141,255,176,.22);text-align:right}
+#icons{position:absolute;top:14px;left:10px;bottom:52px;display:grid;grid-auto-flow:column;grid-template-rows:repeat(auto-fill,94px);grid-auto-columns:96px;gap:4px 6px;z-index:2}
+.icon{width:96px;height:94px;display:flex;flex-direction:column;align-items:center;padding:6px 2px;border:1px dashed transparent;text-align:center;user-select:none}
+.icon svg{width:40px;height:40px;flex-shrink:0;filter:drop-shadow(0 0 4px rgba(141,255,176,.45))}
+.icon span{font-family:var(--pix);font-size:17px;line-height:1;margin-top:5px;overflow-wrap:anywhere;text-shadow:var(--glow)}
+.icon:hover{border-color:var(--dim)}
+.icon.sel{background:rgba(141,255,176,.12);border-color:var(--phos)}
+.icon.sel span{background:var(--phos);color:var(--bg);text-shadow:none}
+
+/* ---------- TASKBAR ---------- */
+#taskbar{position:absolute;left:0;right:0;bottom:0;height:40px;background:#06100a;border-top:2px solid var(--dim);box-shadow:0 -1px 0 #000,0 -6px 20px rgba(0,0,0,.6);display:flex;align-items:center;gap:6px;padding:0 6px;z-index:5000;font-family:var(--pix);font-size:19px}
+#startbtn{height:30px;padding:0 10px;border:2px outset #4f9467;background:#0b1d12;color:var(--phos);display:flex;align-items:center;gap:6px;font-family:var(--pix);font-size:20px;letter-spacing:.05em}
+#startbtn.on{border-style:inset;background:#133222}
+#tasks{flex:1;display:flex;gap:4px;overflow:hidden;min-width:0}
+.tb-btn{height:28px;max-width:170px;min-width:0;padding:0 8px;border:1px solid var(--faint);background:#0a1a10;color:var(--dim);font-family:var(--pix);font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-btn.active{color:var(--phos);border-color:var(--dim);background:#10271a}
+#tray{display:flex;align-items:center;gap:12px;padding:0 8px;height:30px;border:1px inset #1d3a27;color:var(--dim);white-space:nowrap}
+#tray .meter{color:var(--phos)}
+#tray button{font-family:var(--pix);font-size:18px;color:var(--dim)}
+#tray button:hover{color:var(--phos)}
+
+/* ---------- START MENU ---------- */
+#startmenu{position:absolute;left:6px;bottom:44px;width:290px;background:var(--panel);border:2px solid var(--dim);box-shadow:0 0 0 1px #000,0 0 30px rgba(141,255,176,.15);display:none;z-index:5001;font-family:var(--pix);font-size:20px}
+#startmenu.open{display:flex}
+#startmenu .side{width:34px;background:linear-gradient(to top,#1b4a2c,#0a1a10);writing-mode:vertical-rl;transform:rotate(180deg);padding:10px 0;text-align:center;color:var(--phos);letter-spacing:.2em;font-size:18px}
+#startmenu ul{list-style:none;flex:1;padding:4px 0}
+.menu-item{padding:5px 12px;display:flex;gap:10px;align-items:center}
+.menu-item:hover{background:var(--phos);color:var(--bg)}
+.menu-sep{height:1px;background:var(--faint);margin:4px 8px}
+
+/* ---------- WINDOWS ---------- */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--dim);box-shadow:0 0 0 1px #000,4px 4px 0 rgba(0,0,0,.6),0 0 28px rgba(141,255,176,.10);min-width:280px;min-height:160px;animation:winin .18s ease-out}
+.win.focus{border-color:var(--phos);box-shadow:0 0 0 1px #000,4px 4px 0 rgba(0,0,0,.6),0 0 34px rgba(141,255,176,.22)}
+.win.min{display:none}
+.win.max{left:0!important;top:0!important;width:100%!important;height:calc(100% - 40px)!important}
+@keyframes winin{0%{transform:scale(.96);opacity:0;filter:brightness(2)}60%{opacity:1}100%{transform:scale(1);filter:none}}
+.titlebar{height:28px;display:flex;align-items:center;gap:8px;padding:0 4px 0 8px;background:#0b1d12;border-bottom:2px solid var(--dim);user-select:none;touch-action:none;flex-shrink:0}
+.win.focus .titlebar{background:repeating-linear-gradient(to bottom,#1a4a2b 0 2px,#0f2c19 2px 4px)}
+.titlebar .ttl{flex:1;font-family:var(--pix);font-size:19px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:var(--glow)}
+.titlebar svg{width:16px;height:16px;flex-shrink:0}
+.wbtn{width:24px;height:20px;border:2px outset #4f9467;background:#0b1d12;color:var(--phos);font-family:var(--pix);font-size:17px;line-height:14px;display:flex;align-items:center;justify-content:center}
+.wbtn:active{border-style:inset}
+.wbtn.x:hover{background:var(--red);color:#000}
+.wbody{flex:1;overflow:auto;position:relative;scrollbar-width:thin;scrollbar-color:var(--dim) #06100a}
+.wbody::-webkit-scrollbar{width:12px;height:12px}
+.wbody::-webkit-scrollbar-track{background:#06100a;border-left:1px solid var(--faint)}
+.wbody::-webkit-scrollbar-thumb{background:var(--faint);border:2px solid #06100a;box-shadow:inset 0 0 0 1px var(--dim)}
+.status{height:22px;flex-shrink:0;gap:16px;border-top:1px solid var(--faint);font-family:var(--pix);font-size:16px;color:var(--dim);padding:0 8px;display:flex;justify-content:space-between;align-items:center;white-space:nowrap;overflow:hidden}
+.grip{position:absolute;right:0;bottom:0;width:14px;height:14px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,var(--dim) 50%,var(--dim) 60%,transparent 60%,transparent 70%,var(--dim) 70%,var(--dim) 80%,transparent 80%);touch-action:none}
+
+/* ---------- FOLDER VIEW ---------- */
+.addr{display:flex;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--faint);font-family:var(--pix);font-size:17px;color:var(--dim);flex-shrink:0}
+.addr .path{flex:1;border:1px inset var(--faint);padding:0 6px;color:var(--phos);background:#020503;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blurb{padding:10px 12px;border-bottom:1px dashed var(--faint);color:var(--phos2);font-size:13.5px}
+.blurb b{color:var(--amber);font-weight:500}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px;padding:10px}
+.file{display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1px dashed transparent;text-align:center;user-select:none;position:relative}
+.file svg{width:38px;height:38px;flex-shrink:0;filter:drop-shadow(0 0 3px rgba(141,255,176,.4))}
+.file .fn{font-family:var(--pix);font-size:16px;line-height:1.05;margin-top:5px;overflow-wrap:anywhere}
+.file .ft{font-family:var(--pix);font-size:14px;color:var(--dim);margin-top:2px}
+.file:hover{border-color:var(--dim)}
+.file.sel{background:rgba(141,255,176,.12);border-color:var(--phos)}
+.file.seen::after{content:"✓";position:absolute;top:4px;right:6px;font-family:var(--pix);font-size:15px;color:var(--dim)}
+.tag{display:inline-block;font-family:var(--pix);font-size:15px;line-height:1;padding:2px 5px 1px;border:1px solid currentColor;margin-top:3px;letter-spacing:.04em}
+.t-active{color:var(--amber)} .t-unpub{color:var(--red)} .t-done{color:var(--phos)} .t-pub{color:var(--cyan)}
+
+/* ---------- FILE VIEWER ---------- */
+.doc{padding:16px 18px 26px;max-width:860px}
+.dochead{font-family:var(--pix);font-size:20px;line-height:1.2;border:1px solid var(--dim);padding:10px 12px;margin-bottom:14px;background:rgba(141,255,176,.03);position:relative}
+.dochead .fid{color:var(--dim);font-size:17px}
+.dochead .tt{font-size:clamp(24px,3vw,32px);color:var(--phos2);text-shadow:var(--holo);margin:2px 0 6px;line-height:1.05}
+.dochead .meta{display:grid;grid-template-columns:auto 1fr;gap:0 14px;font-size:18px}
+.dochead .meta span:nth-child(odd){color:var(--dim)}
+.decrypt{font-family:var(--pix);font-size:20px;padding:26px 18px;color:var(--phos)}
+.doc h3.fh{font-family:var(--pix);font-weight:400;font-size:21px;color:var(--amber);margin:18px 0 6px;letter-spacing:.05em;text-shadow:0 0 6px rgba(255,191,90,.35)}
+.doc p{margin:6px 0;color:#d5f7df}
+.doc ul{margin:6px 0 6px 2px;list-style:none}
+.doc li{padding-left:18px;position:relative;margin:3px 0;color:#d5f7df}
+.doc li::before{content:"▸";position:absolute;left:2px;color:var(--phos)}
+.doc b,.doc strong{color:var(--phos2);font-weight:600}
+.doc a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
+.doc a:hover{background:var(--cyan);color:#000}
+.xref{color:var(--amber)!important;text-decoration:none!important;border-bottom:1px dashed var(--amber)}
+.xref:hover{background:var(--amber)!important;color:#000!important}
+.kv{border-collapse:collapse;margin:6px 0;font-size:13.5px}
+.kv td{padding:2px 14px 2px 0;vertical-align:top}
+.kv td:first-child{color:var(--dim);white-space:nowrap;font-family:var(--pix);font-size:17px}
+.tbl{border-collapse:collapse;margin:8px 0;font-size:13px;width:100%;max-width:640px}
+.tbl th,.tbl td{border:1px solid var(--faint);padding:4px 8px;text-align:left}
+.tbl th{font-family:var(--pix);font-weight:400;font-size:17px;color:var(--amber);background:rgba(255,191,90,.05)}
+.tbl tr.hl td{color:var(--phos2);background:rgba(141,255,176,.07)}
+.tblwrap{overflow-x:auto}
+pre.ascii{font-family:var(--mono);font-size:12px;line-height:1.35;color:var(--phos);background:#020503;border:1px solid var(--faint);padding:10px 12px;margin:8px 0;overflow-x:auto;white-space:pre;text-shadow:0 0 5px rgba(141,255,176,.3)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.chip{font-family:var(--pix);font-size:16px;line-height:1;padding:3px 7px 2px;border:1px solid var(--dim);color:var(--phos)}
+.corrupt{color:var(--red);font-family:var(--pix);font-size:18px;letter-spacing:.05em}
+.curve{margin:8px 0;max-width:640px}.curve svg{width:100%;height:auto;background:#020503;border:1px solid var(--faint)}.curve figcaption{font-family:var(--pix);font-size:16px;color:var(--dim);margin-top:2px}
+.captcha{border:1px solid var(--amber);padding:10px;margin:10px 0;background:rgba(255,191,90,.03)}
+.captcha pre.ascii{font-size:11.5px;line-height:1.15;max-height:none}
+.capin{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.capin input{flex:1;min-width:180px;background:#020503;border:1px solid var(--dim);color:var(--phos2);font:inherit;padding:4px 8px;outline:none}
+.capin input:focus{border-color:var(--phos)}
+.capin button{font-family:var(--pix);font-size:19px;border:1px solid var(--phos);padding:0 12px;color:var(--phos)}
+.capin button:hover{background:var(--phos);color:var(--bg)}
+.capin button.n{border-color:var(--dim);color:var(--dim)}
+.capout{font-family:var(--pix);font-size:19px;margin-top:8px;min-height:1.2em}
+.note{border-left:3px solid var(--amber);padding:6px 10px;margin:10px 0;background:rgba(255,191,90,.05);color:#f5e6c8;font-size:13.5px}
+.big-quote{font-family:var(--pix);font-size:24px;color:var(--phos2);text-shadow:var(--holo);margin:10px 0}
+
+/* ---------- RESTRICTED ---------- */
+.restrict{padding:20px;font-family:var(--pix);font-size:22px;line-height:1.2;display:flex;justify-content:center;align-items:flex-start}
+.restrict pre{font-family:inherit;white-space:pre;text-shadow:var(--holo)}
+.restrict .btns{margin-top:14px;display:flex;gap:12px}
+.restrict .btns button{font-family:var(--pix);font-size:22px;border:2px solid var(--phos);padding:0 16px;color:var(--phos)}
+.restrict .btns button:hover{background:var(--phos);color:var(--bg)}
+.restrict .btns button.n{border-color:var(--red);color:var(--red)}
+.restrict .btns button.n:hover{background:var(--red);color:#000}
+.escaped{margin:4px 10px 12px;padding:8px 10px;border:1px dashed var(--cyan);color:var(--cyan);font-family:var(--pix);font-size:18px}
+
+/* ---------- TERMINAL ---------- */
+.term{background:#010302;height:100%;padding:10px 12px;font-family:var(--mono);font-size:13.5px;line-height:1.5;color:var(--phos);text-shadow:0 0 5px rgba(141,255,176,.4);overflow:auto}
+.term .ln{white-space:pre-wrap;word-break:break-word}
+.term .in{display:flex;gap:8px;align-items:center}
+.term .pr{color:var(--amber);white-space:nowrap}
+.term input{flex:1;background:none;border:none;outline:none;color:var(--phos2);font:inherit;caret-color:var(--phos);text-shadow:inherit;min-width:0}
+.term a{color:var(--cyan)}
+
+/* ---------- MISC ---------- */
+.integrity-done{animation:pulse 1.2s ease-in-out 3}
+@keyframes pulse{50%{filter:brightness(1.8) drop-shadow(0 0 12px var(--phos))}}
+#toast{position:absolute;right:14px;bottom:52px;z-index:6000;font-family:var(--pix);font-size:19px;background:var(--panel);border:1px solid var(--phos);padding:6px 12px;box-shadow:0 0 20px rgba(141,255,176,.25);display:none;max-width:min(360px,90vw)}
+#off{position:absolute;inset:0;z-index:8000;background:#000;display:none;align-items:center;justify-content:center;text-align:center;font-family:var(--pix);font-size:clamp(22px,3vw,34px);color:var(--amber);padding:20px}
+
+@media (max-width:720px){
+  body{font-size:13.5px}
+  #icons{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));grid-template-rows:none;grid-auto-rows:90px;grid-auto-columns:auto;right:10px;overflow-y:auto;align-content:start}
+  .icon{width:auto}
+  #wall pre{display:none}
+  .win{left:0!important;top:0!important;width:100%!important;height:calc(100% - 40px)!important;border-width:1px}
+  .grip{display:none}
+  .tb-btn{max-width:90px}
+  #tray .hide-sm,#recbar{display:none}
+  #tray{gap:8px;padding:0 4px}
+  .doc{padding:12px 12px 24px}
+  pre.ascii{font-size:10.5px}
+  .restrict{font-size:17px;padding:14px 8px}
+  .restrict pre{white-space:pre-wrap}
 }
-#title canvas{position:absolute;inset:0;width:480px;height:480px;}
-.t-logo{font-size:12px;color:#00ffcc;text-align:center;line-height:1.8;position:relative;z-index:1;letter-spacing:2px;}
-.t-name{font-size:9px;color:#fff;letter-spacing:3px;position:relative;z-index:1;margin-top:2px;}
-.t-sub{font-size:4.5px;color:#336655;line-height:2.6;text-align:center;position:relative;z-index:1;}
-.t-nobar{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:1;margin:6px 0;}
-.t-notxt{font-size:4.5px;color:#aa3311;}
-.tbars-wrap{display:flex;gap:3px;align-items:flex-end;}
-.tbar{width:6px;background:#111;border:1px solid #1a2a22;}
-.tbar:nth-child(1){height:7px;}.tbar:nth-child(2){height:11px;}.tbar:nth-child(3){height:16px;}.tbar:nth-child(4){height:21px;}
-.t-blink{font-size:6px;color:#00ffcc;animation:blink 1s step-end infinite;position:relative;z-index:1;margin-top:4px;}
-
-/* ── DIALOGUE BOX ── */
-#dialogue{
-  display:none;position:absolute;bottom:0;left:0;right:0;
-  background:rgba(0,2,16,0.97);border-top:2px solid #00ffcc;
-  padding:10px 14px 8px;z-index:100;min-height:84px;
+@media (prefers-reduced-motion:reduce){
+  #screen,#fx .roll,.welcome h1::before,.welcome h1::after,.win{animation:none!important}
 }
-#dlg-spk{font-size:4.5px;color:#00ffcc88;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #00ffcc1a;letter-spacing:2px;}
-#dlg-txt{font-size:6.5px;color:#ddf5ee;line-height:2.2;min-height:44px;white-space:pre-wrap;}
-#dlg-cont{position:absolute;bottom:7px;right:10px;font-size:4.5px;color:#00ffcc;animation:blink 0.8s step-end infinite;}
-#dlg-hint2{position:absolute;bottom:7px;left:10px;font-size:4.5px;color:#1a2d28;}
-
-/* ── FLOATING LABELS ── */
-.dlabel{position:absolute;font-family:'Press Start 2P',monospace;pointer-events:none;z-index:60;white-space:nowrap;transform:translateX(-50%);}
-
-/* ── TERMINAL ── */
-#terminal{
-  display:none;position:absolute;inset:0;
-  background:rgba(0,0,10,0.96);z-index:300;
-  align-items:center;justify-content:center;
-}
-#terminal.open{display:flex;}
-#term-win{
-  width:420px;height:340px;background:#04080e;
-  border:2px solid var(--tc,#00ffcc);
-  box-shadow:0 0 40px rgba(0,255,204,0.12);
-  display:flex;flex-direction:column;overflow:hidden;
-}
-#term-bar{
-  background:#070e18;border-bottom:1px solid var(--tc,#00ffcc);
-  padding:5px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0;
-}
-.tdot{width:7px;height:7px;border-radius:50%;display:inline-block;}
-.tdot.r{background:#ff5f57;}.tdot.y{background:#febc2e;}.tdot.g{background:#28c840;}
-#term-fname{font-size:5px;color:var(--tc,#00ffcc);opacity:.6;margin-left:auto;}
-#term-body{flex:1;padding:10px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:1px;scroll-behavior:smooth;}
-#term-body::-webkit-scrollbar{width:3px;}
-#term-body::-webkit-scrollbar-thumb{background:#00ffcc33;}
-.tl{font-size:6px;line-height:2.1;white-space:pre;}
-.tl-prompt{color:#00ffcc;}.tl-text{color:#aacfbb;}.tl-head{color:#ffcc44;}.tl-info{color:#77ccbb;}.tl-dim{color:#2a4035;}
-.tcursor{display:inline-block;width:6px;height:10px;background:var(--tc,#00ffcc);vertical-align:middle;animation:blink 0.65s step-end infinite;}
-#term-foot{
-  background:#070e18;border-top:1px solid var(--tc,#00ffcc);
-  padding:5px 12px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
-}
-#term-status{font-size:4.5px;color:var(--tc,#00ffcc);opacity:.7;}
-#term-close{font-size:4.5px;color:var(--tc,#00ffcc);cursor:pointer;padding:3px 7px;border:1px solid var(--tc,#00ffcc);opacity:.6;}
-#term-close:hover{opacity:1;background:rgba(0,255,204,.08);}
-
-/* ── FADE ── */
-#fade{position:absolute;inset:0;background:#000008;opacity:0;pointer-events:none;z-index:250;}
-
-/* ── VICTORY SCREEN ── */
-#victory{
-  display:none;position:absolute;inset:0;z-index:400;
-  background:#000208;align-items:center;justify-content:center;
-  flex-direction:column;gap:12px;cursor:pointer;
-}
-#victory.show{display:flex;}
-#vic-stars{position:absolute;inset:0;}
-.vic-line{position:relative;z-index:1;text-align:center;}
-#vic-status{font-size:5px;color:#336655;letter-spacing:3px;margin-bottom:4px;}
-#vic-title{font-size:10px;color:#00ffcc;line-height:2;letter-spacing:1px;}
-#vic-sub{font-size:5px;color:#fff;letter-spacing:2px;margin-top:4px;}
-#vic-detail{font-size:4px;color:#336655;line-height:2.8;text-align:center;margin-top:8px;}
-#vic-bars{display:flex;gap:4px;align-items:flex-end;justify-content:center;margin:10px 0;}
-.vbar{width:8px;background:#00ffcc;box-shadow:0 0 6px #00ffcc;}
-.vbar:nth-child(1){height:8px;}.vbar:nth-child(2){height:12px;}.vbar:nth-child(3){height:16px;}.vbar:nth-child(4){height:20px;}
-#vic-blink{font-size:5px;color:#00ffcc;animation:blink 1s step-end infinite;margin-top:6px;position:relative;z-index:1;}
-
-/* ── CONTROLS BAR ── */
-#ctrlbar{margin-top:7px;font-size:4px;color:#1a2520;letter-spacing:.4px;text-align:center;line-height:2.2;}
-
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 </head>
 <body>
-<div id="shell">
-  <canvas id="c" width="240" height="240"></canvas>
-  <div id="hud">
-    <div class="hud-l" id="hud-loc">📡 NO SIGNAL</div>
-    <div id="sig-wrap">
-      <span id="sig-lbl">SIG</span>
-      <div id="sig-bars">
-        <div class="sbar" id="b0"></div><div class="sbar" id="b1"></div>
-        <div class="sbar" id="b2"></div><div class="sbar" id="b3"></div>
+<div id="screen">
+  <div id="boot" role="main">
+    <div class="power" id="power">
+      <div class="big holo">ARCHIVE NODE PS-07</div>
+      <div class="sub">NO SIGNAL SINCE 2061</div>
+      <div style="margin-top:34px">[ PRESS ANY KEY OR CLICK TO POWER ON ]<span class="cursor" style="margin-left:6px"></span></div>
+    </div>
+    <pre id="bootlog" style="display:none"></pre>
+    <button id="skip" aria-label="Skip boot sequence">[ SKIP BOOT &raquo; ]</button>
+  </div>
+
+  <div id="desktop" aria-label="Archive desktop">
+    <div id="wall"><pre id="wallart"></pre><div class="stamp">LAST ARCHIVE OS 0.89<br>NODE PS-07 // OWNER: P. SHARMA</div></div>
+    <div id="icons"></div>
+    <div id="winlayer"></div>
+    <div id="startmenu" role="menu">
+      <div class="side">ARCHIVE OS</div>
+      <ul id="menulist"></ul>
+    </div>
+    <div id="taskbar">
+      <button id="startbtn" aria-haspopup="true"><svg width="18" height="18" viewBox="0 0 9 9" shape-rendering="crispEdges"><rect x="0" y="0" width="4" height="4" fill="#8dffb0"/><rect x="5" y="0" width="4" height="4" fill="#ffbf5a"/><rect x="0" y="5" width="4" height="4" fill="#6ff6ff"/><rect x="5" y="5" width="4" height="4" fill="#ff4d5e"/></svg>ARCHIVE</button>
+      <div id="tasks"></div>
+      <div id="tray">
+        <span class="hide-sm">NET <span class="meter" id="netpct">41%</span></span>
+        <span title="Archive integrity: files recovered">REC <span class="meter" id="recbar">░░░░░░░░</span> <span class="meter" id="recpct">0%</span></span>
+        <button id="sndbtn" title="Toggle sound">SND:ON</button>
+        <span id="clock" class="hide-sm">--:--</span>
       </div>
     </div>
+    <div id="toast"></div>
   </div>
-
-  <!-- TITLE SCREEN -->
-  <div id="title">
-    <canvas id="sc" width="480" height="480"></canvas>
-    <div class="t-logo">SIGNAL QUEST</div>
-    <div class="t-name">PARI SHARMA</div>
-    <div class="t-sub">BTech Computer Engineering · NMIMS Mumbai<br>Robotics · AI · Embedded Systems · 2027</div>
-    <div class="t-nobar">
-      <div class="t-notxt">⚠ SIGNAL LOST — DEEP SPACE</div>
-      <div class="tbars-wrap"><div class="tbar"></div><div class="tbar"></div><div class="tbar"></div><div class="tbar"></div></div>
-    </div>
-    <div class="t-blink">▶ PRESS ENTER OR TAP TO LAUNCH</div>
-  </div>
-
-  <!-- DIALOGUE -->
-  <div id="dialogue">
-    <div id="dlg-spk">— TRANSMISSION —</div>
-    <div id="dlg-txt"></div>
-    <div id="dlg-hint2">ENTER / TAP</div>
-    <div id="dlg-cont">▼</div>
-  </div>
-
-  <!-- TERMINAL OVERLAY -->
-  <div id="terminal">
-    <div id="term-win">
-      <div id="term-bar">
-        <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
-        <span id="term-fname">FILE.log</span>
-      </div>
-      <div id="term-body"></div>
-      <div id="term-foot">
-        <span id="term-status">● UPLINK ACTIVE</span>
-        <span id="term-close" onclick="closeTerm()">[ ESC — DISCONNECT ]</span>
-      </div>
-    </div>
-  </div>
-
-  <div id="fade"></div>
-
-  <!-- VICTORY SCREEN -->
-  <div id="victory">
-    <canvas id="vic-stars" width="480" height="480"></canvas>
-    <div class="vic-line" id="vic-status">✓ ALL DATA NODES RECOVERED</div>
-    <div class="vic-line" id="vic-title">MISSION SUCCESS</div>
-    <div class="vic-line" id="vic-sub">CONNECTION REESTABLISHED</div>
-    <div id="vic-bars"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div>
-    <div class="vic-line" id="vic-detail">
-      SUIT UPLINK  ·  FULL SIGNAL  ·  4 / 4 BARS<br>
-      9 DATA NODES DECRYPTED<br>
-      PARI SHARMA  ·  ONLINE
-    </div>
-    <div id="vic-blink">▶ TAP OR PRESS ENTER TO RESTART</div>
-  </div>
+  <div id="off"></div>
+  <div id="fx"><canvas id="noise" width="160" height="100"></canvas><div class="roll"></div><div class="scan"></div><div class="vig"></div></div>
 </div>
-<div id="ctrlbar">ARROWS / WASD — MOVE &nbsp;|&nbsp; ENTER / Z — INTERACT &nbsp;|&nbsp; ESC / X — BACK &nbsp;|&nbsp; TAP / SWIPE — TOUCH</div>
 
 <script>
-/* ═══════════════════════════════════════════════════════
-   DATA
-═══════════════════════════════════════════════════════ */
-const DATA={
-  education:{label:'EDUCATION',color:'#44aaff',signal:1,subs:{
-    academics:{label:'ACADEMICS',color:'#44aaff',file:'ACADEMICS.log',lines:[
-      {t:'head',v:'◈  ACADEMIC RECORD  ◈'},
-      {t:'info',v:'Institution  : SVKM\'S NMIMS MPSTME'},
-      {t:'info',v:'Degree       : BTech Computer Engg'},
-      {t:'info',v:'Location     : Mumbai, India'},
-      {t:'text',v:'CGPA         : 3.70 / 4.0'},
-      {t:'text',v:'Graduation   : May 2027 (Expected)'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  FOCUS AREAS  ◈'},
-      {t:'text',v:'  ► Robotics & Autonomous Systems'},
-      {t:'text',v:'  ► Artificial Intelligence & ML'},
-      {t:'text',v:'  ► Embedded Systems & Hardware'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  ACTIVITIES  ◈'},
-      {t:'text',v:'  ► AUV Robotics Club — Active'},
-      {t:'text',v:'  ► IBM Qiskit Advocate Program'},
-      {t:'info',v:'Prev: Jamnabai Narsee School 2018-21'},
-    ]},
-    honors:{label:'HONORS & AWARDS',color:'#44aaff',file:'HONORS.log',lines:[
-      {t:'head',v:'◈  COMPETITION WINS  ◈'},
-      {t:'info',v:'3rd Place — UVDC 2025'},
-      {t:'text',v:'  Underwater Vehicle Design Challenge'},
-      {t:'text',v:'  IIT Guwahati Techniche  [ 2025 ]'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  NATIONAL RECOGNITION  ◈'},
-      {t:'text',v:'  ► AutHer Awards — Best Manuscript'},
-      {t:'dim', v:'     JK Paper x Times of India'},
-      {t:'text',v:'  ► Certificate of Appreciation'},
-      {t:'dim', v:'     ICRTM-2025, Hansraj College, Delhi'},
-      {t:'text',v:'  ► DELPHI Program Graduate'},
-      {t:'dim', v:'     HITLAB Emerging Leaders Program'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  CREDENTIALS  ◈'},
-      {t:'info',v:'IBM Qiskit Advocate  Mar 2026 - Now'},
-    ]},
-    certs:{label:'CERTIFICATIONS',color:'#44aaff',file:'CERTS.log',lines:[
-      {t:'head',v:'◈  VERIFIED CREDENTIALS  ◈'},
-      {t:'info',v:'IBM — Basics of Quantum Information'},
-      {t:'dim', v:'  Issued: March 2026'},
-      {t:'text',v:'HITLAB — DELPHI Internship Cert'},
-      {t:'dim', v:'  Issued: December 2025'},
-      {t:'text',v:'Internshala — Machine Learning'},
-      {t:'dim', v:'  Grade: 92%  |  August 2024'},
-      {t:'text',v:'World Science U — Search for ET Life'},
-      {t:'dim', v:'  February 2025'},
-      {t:'text',v:'Certificate of Appreciation'},
-      {t:'dim', v:'  ICRTM-2025  |  February 2025'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  QUANTUM CLEARANCE  ◈'},
-      {t:'info',v:'STATUS: QISKIT ADVOCATE  ACTIVE  ✓'},
-    ]},
-  }},
-  experience:{label:'EXPERIENCE',color:'#ff8844',signal:2,subs:{
-    hitlab:{label:'HITLAB INTERNSHIP',color:'#ff8844',file:'HITLAB_INTERN.log',lines:[
-      {t:'head',v:'◈  HITLAB INTERNSHIP  ◈'},
-      {t:'info',v:'Role     : Research Intern (Remote)'},
-      {t:'info',v:'Location : New York, USA'},
-      {t:'info',v:'Period   : Aug 2025 – Apr 2026'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  MISSION REPORT  ◈'},
-      {t:'text',v:'  ► Digital health innovation research'},
-      {t:'text',v:'  ► FemTech market trends analysis'},
-      {t:'text',v:'  ► Biweekly emerging-tech reports'},
-      {t:'text',v:'  ► Responsible AI in healthcare'},
-      {t:'text',v:'  ► Global researcher collaboration'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  PROGRAM COMPLETED  ◈'},
-      {t:'info',v:'DELPHI — Developing Emerging Leaders'},
-      {t:'dim', v:'in Public Health Innovation'},
-    ]},
-    auv:{label:'TEAM AUV MPSTME',color:'#ff8844',file:'TEAM_AUV.log',lines:[
-      {t:'head',v:'◈  TEAM AUV MPSTME  ◈'},
-      {t:'info',v:'Role     : Programmer'},
-      {t:'info',v:'Location : Mumbai, India'},
-      {t:'info',v:'Period   : Apr 2024 – Present'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  MISSION LOG  ◈'},
-      {t:'text',v:'  ► Autonomous Underwater Vehicle dev'},
-      {t:'text',v:'  ► Real-time ROV control algorithms'},
-      {t:'text',v:'  ► Multimodal deep learning nav'},
-      {t:'text',v:'  ► 3rd Place UVDC IIT Guwahati 2025'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'head',v:'◈  SYSTEMS BUILT  ◈'},
-      {t:'text',v:'  ► Underwater Vision-Guided Nav'},
-      {t:'dim', v:'     OpenCV  ·  HSV  ·  MAVLink'},
-      {t:'text',v:'  ► Error-based closed-loop steering'},
-      {t:'dim', v:'     Works under varying turbidity'},
-    ]},
-    pubs:{label:'PUBLICATIONS',color:'#ff8844',file:'PUBLICATIONS.log',lines:[
-      {t:'head',v:'◈  PUBLISHED RESEARCH  ◈'},
-      {t:'info',v:'IJCRT — February 2024'},
-      {t:'text',v:'  Comparative Analysis: AI Image'},
-      {t:'dim', v:'  Generation Models (Peer-Reviewed)'},
-      {t:'dim', v:'  Stable Diffusion · DALL-E · WOMBO'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'ICRTM-2025 — February 2025'},
-      {t:'text',v:'  Graph Theory: Robotic Tactile Maps'},
-      {t:'dim', v:'  for the Visually Impaired'},
-      {t:'dim', v:'  Hansraj College, Delhi Univ.'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'ICAIISD25 / Springer — Dec 2025'},
-      {t:'text',v:'  Traffic Time Prediction ML: Mumbai'},
-      {t:'dim', v:'  MAE 2.56 min  ·  R² = 0.94'},
-      {t:'dim', v:'  Pseudo-LSTM · Temporal Features'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'text',v:'  Mars Terrain Clustering (2026)'},
-      {t:'dim', v:'  Belsare · Inamdar · Sharma (co-auth)'},
-    ]},
-  }},
-  projects:{label:'PROJECTS',color:'#44ff88',signal:3,subs:{
-    robotics:{label:'ROBOTICS & HW',color:'#44ff88',file:'ROBOTICS.log',lines:[
-      {t:'head',v:'◈  ROBOTICS & HARDWARE  ◈'},
-      {t:'info',v:'Wearable Biofeedback System'},
-      {t:'text',v:'  HR + noise sensor → overload detect'},
-      {t:'dim', v:'  Haptics · bone conduction audio'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Mars Rover Systems Simulator'},
-      {t:'text',v:'  Physics-based Pygame sim'},
-      {t:'dim', v:'  Traction · slip · rollover · A* nav'},
-      {t:'dim', v:'  [ Feb 2026  —  ONGOING ]'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Sensorless R2-D2 Pathfinding Droid'},
-      {t:'text',v:'  3D-printed Arduino robot'},
-      {t:'dim', v:'  A* 20x20 grid · Pygame · PIL maps'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Bluetooth-Controlled Arduino Car'},
-      {t:'dim', v:'  HC-05 · Python line-follow · OTP'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Multimodal Deep Learning AUV'},
-      {t:'dim', v:'  ResNet+UNet+CNN-LSTM+Kalman Filter'},
-    ]},
-    aiml:{label:'AI & ML',color:'#44ff88',file:'AI_ML.log',lines:[
-      {t:'head',v:'◈  AI & MACHINE LEARNING  ◈'},
-      {t:'info',v:'Travel Time Prediction — Mumbai'},
-      {t:'text',v:'  XGBoost · 2mo real traffic data'},
-      {t:'dim', v:'  MAE 3.77min  ·  R² 0.86–0.94'},
-      {t:'dim', v:'  Google Cloud · FastAPI · JS'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Aura — AI-Powered SOC Engine'},
-      {t:'text',v:'  RAG pipeline (Gemini API)'},
-      {t:'dim', v:'  HITL "Teach Aura" · CISA feeds'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Gesture 3D Dashboard'},
-      {t:'text',v:'  MediaPipe · Three.js STL viewer'},
-      {t:'dim', v:'  NASA Mars Weather · ML time-series'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Mars Terrain Risk Clustering'},
-      {t:'dim', v:'  ML classify · high-dim feature space'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Underwater Vision-Guided AUV'},
-      {t:'dim', v:'  OpenCV · HSV · ArduPilot/MAVLink'},
-    ]},
-    web:{label:'WEB & INTERACTIVE',color:'#44ff88',file:'WEB.log',lines:[
-      {t:'head',v:'◈  WEB & INTERACTIVE  ◈'},
-      {t:'info',v:'Matrix Rerum'},
-      {t:'text',v:'  Narrative gamified OS platform'},
-      {t:'dim', v:'  Player IS the OS — scheduling trials'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'DSA Code Compiler & CFG Analyzer'},
-      {t:'text',v:'  Tkinter GUI · C++ syntax check'},
-      {t:'dim', v:'  Auto-indent · CFG logical errors'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'The Psyche Quotient'},
-      {t:'text',v:'  Mental health · Star Wars gamified'},
-      {t:'dim', v:'  HTML/CSS/JS/Bootstrap/MySQL/PHP'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'Travel Time Web App'},
-      {t:'text',v:'  Real-time Mumbai route calculator'},
-      {t:'dim', v:'  Optimal windows for commuters'},
-      {t:'dim', v:'─────────────────────────────────'},
-      {t:'info',v:'All projects: github.com/PariS-x'},
-    ]},
-  }},
+(()=>{
+"use strict";
+/* ============================================================
+   CONFIG — edit these
+============================================================ */
+const CONFIG = {
+  name: "PARI SHARMA",
+  email: "parisharma1606@gmail.com",
+  linkedin: "https://www.linkedin.com/in/pari-sharma-b045991b2",
+  github: "https://github.com/PariS-x",
+  resume: "Pari_Sharma_CV.pdf"   // put the PDF next to index.html in the repo
 };
 
-/* ═══════════════════════════════════════════════════════
-   CANVAS + MAP
-═══════════════════════════════════════════════════════ */
-const canvas=document.getElementById('c');
-const ctx=canvas.getContext('2d');
-const T=16,COLS=15,ROWS=15;
-const sc=document.getElementById('sc'),sx=sc.getContext('2d');
-const STARS=Array.from({length:180},()=>({
-  x:Math.random()*480,y:Math.random()*480,
-  r:Math.random()*1.5+0.2,ph:Math.random()*Math.PI*2,
-  sp:Math.random()*0.013+0.003
-}));
+/* ============================================================
+   HELPERS for writing file bodies
+============================================================ */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const H = {
+  h:t=>`<h3 class="fh">// ${t}</h3>`,
+  p:t=>`<p>${t}</p>`,
+  ul:a=>`<ul>${a.map(x=>`<li>${x}</li>`).join("")}</ul>`,
+  kv:a=>`<table class="kv">${a.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table>`,
+  pre:t=>`<pre class="ascii">${esc(t)}</pre>`,
+  tbl:(head,rows,hl=[])=>`<div class="tblwrap"><table class="tbl"><tr>${head.map(x=>`<th>${x}</th>`).join("")}</tr>${rows.map((r,i)=>`<tr class="${hl.includes(i)?"hl":""}">${r.map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</table></div>`,
+  chips:a=>`<div class="chips">${a.map(x=>`<span class="chip">${x}</span>`).join("")}</div>`,
+  a:(href,label)=>`<a href="${href}" target="_blank" rel="noopener">${label}</a>`,
+  x:(id,label)=>`<a class="xref" data-open="${id}" tabindex="0">${label}</a>`,
+  note:t=>`<div class="note">${t}</div>`,
+  curve:(vals,cap)=>{const w=600,h=150,p=28,mn=Math.min(...vals),mx=Math.max(...vals),sx=i=>p+i*(w-p-8)/(vals.length-1),sy=v=>8+(mx-v)/((mx-mn)||1)*(h-p-8);
+    const pts=vals.map((v,i)=>sx(i).toFixed(1)+","+sy(v).toFixed(1)).join(" ");
+    return `<figure class="curve"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${cap}"><g stroke="#1d3a27" stroke-width="1">${[0,25,50,75,99].map(i=>`<line x1="${sx(i)}" y1="8" x2="${sx(i)}" y2="${h-p}"/>`).join("")}<line x1="${p}" y1="${h-p}" x2="${w-8}" y2="${h-p}" stroke="#4f9467"/><line x1="${p}" y1="8" x2="${p}" y2="${h-p}" stroke="#4f9467"/></g><polyline points="${pts}" fill="none" stroke="#8dffb0" stroke-width="2" style="filter:drop-shadow(0 0 4px rgba(141,255,176,.7))"/><g fill="#4f9467" font-family="VT323,monospace" font-size="15">${[0,25,50,75,100].map(i=>`<text x="${sx(Math.min(i,99))}" y="${h-10}" text-anchor="${i===100?"end":i===0?"start":"middle"}">${i}</text>`).join("")}<text x="${p+4}" y="20">${mx.toFixed(2)}</text><text x="${p+4}" y="${h-p-4}">${mn.toFixed(2)}</text></g></svg><figcaption>${cap}</figcaption></figure>`;},
+  bad:(t="DATA CORRUPTED")=>`<span class="corrupt">▓▒░ ${t} ░▒▓</span>`
+};
 
-const _=0,D='D',E='E',F='F',G='G',X='X';
+/* ============================================================
+   ARCHIVE CONTENT
+   status: active | unpub | done | pub
+============================================================ */
+const FILES = {};
+function F(o){ FILES[o.id]=o; return o.id; }
 
-/* MAP: main hub — 3 wing doors along bottom */
-const MAP_MAIN=[
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,2,2,1,2,2,2,2,2,2,2,1,2,2,1],
-  [1,2,2,1,2,2,2,2,2,2,2,1,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,3,_,_,_,_,_,_,_,_,_,3,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,D,D,D,1,E,E,E,1,F,F,F,1,1,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-];
-
-/* MAP: wing — 3 sub-doors */
-const MAP_WING=[
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,3,_,_,_,_,_,_,_,_,_,3,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,G,G,G,1,G,G,G,1,G,G,G,1,1,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-];
-
-/* MAP: room — terminal console in center, player spawns below */
-const MAP_ROOM=[
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,2,_,_,_,_,_,_,_,_,_,_,_,2,1],
-  [1,2,_,_,_,_,_,_,_,_,_,_,_,2,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,X,X,X,_,_,_,_,_,1],
-  [1,_,_,_,_,_,X,X,X,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,_,_,_,_,_,_,_,_,_,_,_,_,_,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-];
-
-/* ═══════════════════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════════════════ */
-let S={screen:'title',wing:null,sub:null,px:7,py:9,pdir:2,pstep:0,signal:0,gt:0};
-const VISITED=new Set();
-const TOTAL_NODES=9;
-const vsc=document.getElementById('vic-stars');
-const vsx=vsc.getContext('2d');
-const VSTARS=Array.from({length:200},()=>({x:Math.random()*480,y:Math.random()*480,r:Math.random()*1.8+0.2,ph:Math.random()*Math.PI*2,sp:Math.random()*0.015+0.004}));
-
-function wCol(){return S.wing?DATA[S.wing].color:'#00ffcc';}
-function sCol(){return(S.sub&&S.wing)?DATA[S.wing].subs[S.sub].color:wCol();}
-
-/* ═══════════════════════════════════════════════════════
-   TILE RENDERING  — Pokémon Fire Red palette
-═══════════════════════════════════════════════════════ */
-function dTile(t,cx,cy){
-  const x=cx*T,y=cy*T;
-  /* floor */
-  if(t===0||t===_){
-    /* checker floor — light/dark alternating */
-    const even=(cx+cy)%2===0;
-    ctx.fillStyle=even?'#1a1a2e':'#16163a';
-    ctx.fillRect(x,y,T,T);
-    /* subtle star pixel */
-    if((cx*17+cy*31)%17===0){
-      ctx.fillStyle='rgba(200,220,255,0.18)';
-      ctx.fillRect(x+((cx*5+cy*3)%13)+1,y+((cx*3+cy*9)%13)+1,1,1);
-    }
-    return;
-  }
-  /* wall */
-  if(t===1){
-    ctx.fillStyle='#0b1633';ctx.fillRect(x,y,T,T);
-    /* brick face */
-    const row=cy%2;
-    ctx.fillStyle='#0e1e42';
-    if(row===0){
-      ctx.fillRect(x,y+2,T,5);ctx.fillRect(x,y+9,T,5);
-    } else {
-      ctx.fillRect(x+4,y+2,T-4,5);ctx.fillRect(x,y+2,4,5);
-      ctx.fillRect(x+4,y+9,T-4,5);ctx.fillRect(x,y+9,4,5);
-    }
-    ctx.fillStyle='#070f24';
-    ctx.fillRect(x,y+7,T,2);ctx.fillRect(x,y+14,T,2);
-    if(cx%3===0){ctx.fillStyle='#1a2a55';ctx.fillRect(x+1,y+3,2,3);}
-    return;
-  }
-  /* ceiling/ceiling strip */
-  if(t===2){
-    ctx.fillStyle='#060d20';ctx.fillRect(x,y,T,T);
-    /* glowing panel lines */
-    const p=0.3+0.3*Math.sin(S.gt*0.018+cx*0.4+cy*0.2);
-    ctx.fillStyle=`rgba(120,160,255,${p})`;
-    ctx.fillRect(x+1,y+3,T-2,1);
-    ctx.fillRect(x+1,y+11,T-2,1);
-    ctx.fillStyle='#08142e';ctx.fillRect(x+1,y+5,T-2,5);
-    ctx.strokeStyle='#0c1840';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,T-1,T-1);
-    return;
-  }
-  /* console/beacon */
-  if(t===3){
-    ctx.fillStyle='#060d1a';ctx.fillRect(x,y,T,T);
-    ctx.fillStyle='#0e1a2c';ctx.fillRect(x+1,y+1,T-2,T-2);
-    ['#ff4040','#40ff80','#4090ff','#ffee00'].forEach((c,i)=>{
-      const on=Math.floor(S.gt*0.05+i*1.5)%4<3;
-      ctx.fillStyle=on?c:'#181828';
-      ctx.fillRect(x+2+i*3,y+3,2,2);
-    });
-    ctx.fillStyle='#1c2c40';
-    ctx.fillRect(x+1,y+8,T-2,2);ctx.fillRect(x+1,y+12,T-2,2);
-    return;
-  }
-  /* doors */
-  if(t===D){dDoor(x,y,'#44aaff','EDUC');return;}
-  if(t===E){dDoor(x,y,'#ff8844','EXPR');return;}
-  if(t===F){dDoor(x,y,'#44ff88','PROJ');return;}
-  if(t===G){dDoor(x,y,wCol(),'');return;}
-  /* terminal */
-  if(t===X){
-    const c=sCol(),p=0.55+0.45*Math.sin(S.gt*0.07);
-    ctx.fillStyle='#050a10';ctx.fillRect(x,y,T,T);
-    ctx.fillStyle='#081016';ctx.fillRect(x+1,y+1,T-2,T-5);
-    /* screen glow */
-    ctx.fillStyle=c;ctx.globalAlpha=0.12*p;ctx.fillRect(x+2,y+2,T-4,T-8);ctx.globalAlpha=1;
-    /* scanlines */
-    ctx.fillStyle=c;ctx.globalAlpha=0.5*p;
-    for(let r=0;r<4;r++)ctx.fillRect(x+2,y+2+r*2,T-4,1);
-    ctx.globalAlpha=1;
-    /* base */
-    ctx.fillStyle='#0a1620';ctx.fillRect(x+5,y+T-4,6,2);ctx.fillRect(x+3,y+T-2,T-6,2);
-    ctx.strokeStyle=c;ctx.globalAlpha=0.7*p;ctx.lineWidth=1;ctx.strokeRect(x+1,y+1,T-2,T-5);ctx.globalAlpha=1;
-    return;
-  }
-  ctx.fillStyle='#04040d';ctx.fillRect(x,y,T,T);
-}
-
-function dDoor(x,y,col,lbl){
-  const p=0.15+0.08*Math.sin(S.gt*0.04+x*0.07);
-  ctx.fillStyle='#020208';ctx.fillRect(x,y,T,T);
-  /* door frame */
-  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.strokeRect(x+1,y+1,T-2,T-2);
-  /* inner fill */
-  ctx.fillStyle=col;ctx.globalAlpha=p;ctx.fillRect(x+2,y+2,T-4,T-4);ctx.globalAlpha=1;
-  /* center gem */
-  ctx.fillStyle=col;ctx.fillRect(x+T/2-1,y+T/2-1,2,2);
-  /* corner bolts */
-  ctx.globalAlpha=0.55;ctx.fillStyle=col;
-  ctx.fillRect(x+2,y+2,2,1);ctx.fillRect(x+2,y+2,1,2);
-  ctx.fillRect(x+T-4,y+T-3,2,1);ctx.fillRect(x+T-3,y+T-4,1,2);
-  ctx.globalAlpha=1;
-}
-
-function getMap(){
-  if(S.screen==='main')return MAP_MAIN;
-  if(S.screen==='wing')return MAP_WING;
-  return MAP_ROOM;
-}
-function drawMap(){
-  const m=getMap();
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)dTile(m[r][c],c,r);
-}
-
-/* door glow underlines */
-function drawGlows(){
-  const a=0.5+0.28*Math.sin(S.gt*0.04);
-  let list=null;
-  if(S.screen==='main')list=[[1,'#44aaff'],[5,'#ff8844'],[9,'#44ff88']];
-  if(S.screen==='wing')list=[[1,wCol()],[5,wCol()],[9,wCol()]];
-  if(!list)return;
-  list.forEach(([c,col])=>{
-    ctx.fillStyle=col;ctx.globalAlpha=a*0.8;
-    ctx.fillRect(c*T,13*T,T*3,1);
-    ctx.globalAlpha=1;
-  });
-}
-
-/* ═══════════════════════════════════════════════════════
-   ASTRONAUT SPRITE  (Fire Red top-down style)
-═══════════════════════════════════════════════════════ */
-function drawAstro(tx,ty,step){
-  const x=tx*T,y=ty*T;
-  const sc=wCol();
-
-  /* legs — walk cycle */
-  ctx.fillStyle='#8fa0b0';
-  if(step%2===0){
-    ctx.fillRect(x+4,y+13,4,3);ctx.fillRect(x+9,y+13,4,3);
-    ctx.fillStyle='#2a3f55';ctx.fillRect(x+3,y+15,5,2);ctx.fillRect(x+8,y+15,5,2);
-  } else {
-    ctx.fillRect(x+3,y+13,4,4);ctx.fillRect(x+10,y+12,4,4);
-    ctx.fillStyle='#2a3f55';ctx.fillRect(x+2,y+16,5,2);ctx.fillRect(x+10,y+15,5,2);
-  }
-
-  /* body */
-  ctx.fillStyle='#c8d4e0';ctx.fillRect(x+3,y+6,10,8);
-  /* visor stripe */
-  ctx.fillStyle=sc;ctx.globalAlpha=0.7;ctx.fillRect(x+4,y+8,8,2);ctx.globalAlpha=1;
-
-  /* arms */
-  ctx.fillStyle='#a8b8c4';
-  ctx.fillRect(x+1,y+6,2,7);ctx.fillRect(x+13,y+6,2,7);
-  ctx.fillStyle='#7a8898';ctx.fillRect(x+1,y+6,2,2);ctx.fillRect(x+13,y+6,2,2);
-
-  /* helmet */
-  ctx.fillStyle='#8fa0b0';ctx.fillRect(x+2,y+1,12,6);
-  /* visor */
-  ctx.fillStyle='#001428';ctx.fillRect(x+3,y+2,10,4);
-  ctx.fillStyle='rgba(80,200,255,0.6)';ctx.fillRect(x+4,y+3,4,1);
-  ctx.fillStyle='rgba(80,200,255,0.25)';ctx.fillRect(x+4,y+4,2,1);
-
-  /* antenna */
-  ctx.fillStyle='#b0c0cc';ctx.fillRect(x+4,y+0,8,2);
-  ctx.fillStyle='#778899';ctx.fillRect(x+11,y-3,1,4);
-  const blink=S.signal>0&&Math.floor(S.gt*0.07)%2===0;
-  ctx.fillStyle=blink?'#00ffcc':'#ff3030';ctx.fillRect(x+11,y-4,1,1);
-
-  /* signal bars on suit */
-  for(let i=0;i<4;i++){
-    ctx.fillStyle=i<S.signal?'#00ffcc':'#1a2a22';
-    ctx.fillRect(x+5+i*2,y+11,1,2);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════
-   RENDER
-═══════════════════════════════════════════════════════ */
-function render(){
-  ctx.clearRect(0,0,240,240);
-  if(S.screen==='title')return;
-  drawMap();
-  drawGlows();
-  /* draw player in ALL screens including room */
-  drawAstro(S.px,S.py,S.pstep);
-}
-
-/* ═══════════════════════════════════════════════════════
-   FLOATING LABELS
-═══════════════════════════════════════════════════════ */
-let lblEls=[];
-function clearLabels(){lblEls.forEach(e=>e.remove());lblEls=[];}
-function addLabel(txt,col,xPx,bottomPx,sz,extra){
-  const el=document.createElement('div');
-  el.className='dlabel';
-  el.style.cssText=`left:${xPx}px;bottom:${bottomPx}px;font-size:${sz||6}px;color:${col};text-shadow:0 0 8px ${col};${extra||''}`;
-  el.textContent=txt;
-  document.getElementById('shell').appendChild(el);lblEls.push(el);
-}
-
-function buildLabels(){
-  clearLabels();
-  const rowBot=68;
-  if(S.screen==='main'){
-    [{txt:'🎓 EDUCATION',col:'#44aaff',px:80},
-     {txt:'💼 EXPERIENCE',col:'#ff8844',px:208},
-     {txt:'⚡ PROJECTS',col:'#44ff88',px:336}]
-    .forEach(d=>addLabel(d.txt,d.col,d.px,rowBot,5.5));
-  }
-  if(S.screen==='wing'&&S.wing){
-    const sec=DATA[S.wing];
-    const subs=Object.values(sec.subs);
-    [{px:80,i:0},{px:208,i:1},{px:336,i:2}].forEach(({px,i})=>{
-      if(subs[i])addLabel(subs[i].label,sec.color,px,rowBot,5);
-    });
-    const te=document.createElement('div');
-    te.style.cssText=`position:absolute;top:26px;left:0;right:0;text-align:center;font-family:'Press Start 2P',monospace;font-size:6px;color:${sec.color};text-shadow:0 0 10px ${sec.color};pointer-events:none;z-index:60;`;
-    te.textContent=`— ${sec.label} WING —`;
-    document.getElementById('shell').appendChild(te);lblEls.push(te);
-  }
-  if(S.screen==='room'&&S.wing&&S.sub){
-    const sub=DATA[S.wing].subs[S.sub];
-    const te=document.createElement('div');
-    te.style.cssText=`position:absolute;top:26px;left:0;right:0;text-align:center;font-family:'Press Start 2P',monospace;font-size:5.5px;color:${sub.color};text-shadow:0 0 8px ${sub.color};pointer-events:none;z-index:60;`;
-    te.textContent=`— ${sub.label} —`;
-    document.getElementById('shell').appendChild(te);lblEls.push(te);
-    /* hint above terminal */
-    const th=document.createElement('div');
-    th.style.cssText=`position:absolute;left:240px;bottom:220px;transform:translateX(-50%);font-family:'Press Start 2P',monospace;font-size:5px;color:${sub.color};pointer-events:none;z-index:60;animation:blink 1s step-end infinite;white-space:nowrap;`;
-    th.textContent='▲ PRESS ENTER';
-    document.getElementById('shell').appendChild(th);lblEls.push(th);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════
-   SIGNAL BARS
-═══════════════════════════════════════════════════════ */
-function setSignal(n){
-  S.signal=n;
-  for(let i=0;i<4;i++)document.getElementById('b'+i).classList.toggle('on',i<n);
-  const lbl=document.getElementById('sig-lbl');
-  if(n===0){lbl.textContent='NO SIG';lbl.style.color='#552211';}
-  else if(n<4){lbl.textContent='SIGNAL';lbl.style.color='#aa7733';}
-  else{lbl.textContent='FULL SIG';lbl.style.color='#00ffcc';}
-}
-
-/* ═══════════════════════════════════════════════════════
-   DIALOGUE
-═══════════════════════════════════════════════════════ */
-let DQ=[],DI=0,DT=null,DF='',DTYP=false;
-function showDlg(lines,spk){
-  DQ=lines;DI=0;
-  document.getElementById('dlg-spk').textContent='— '+(spk||'TRANSMISSION')+' —';
-  document.getElementById('dialogue').style.display='block';
-  typeNext();
-}
-function typeNext(){
-  const el=document.getElementById('dlg-txt');el.textContent='';
-  DF=DQ[DI];DTYP=true;let i=0;
-  if(DT)clearInterval(DT);
-  DT=setInterval(()=>{
-    if(i<DF.length){el.textContent+=DF[i++];}
-    else{clearInterval(DT);DT=null;DTYP=false;}
-  },16);
-}
-function advDlg(){
-  if(DTYP){clearInterval(DT);DT=null;DTYP=false;document.getElementById('dlg-txt').textContent=DF;return;}
-  DI++;if(DI>=DQ.length)closeDlg();else typeNext();
-}
-function closeDlg(){
-  document.getElementById('dialogue').style.display='none';
-  DQ=[];DTYP=false;if(DT){clearInterval(DT);DT=null;}
-}
-
-/* ═══════════════════════════════════════════════════════
-   TERMINAL
-═══════════════════════════════════════════════════════ */
-function openTerm(){
-  if(!S.wing||!S.sub)return;
-  const sub=DATA[S.wing].subs[S.sub];
-  const tw=document.getElementById('term-win');
-  tw.style.setProperty('--tc',sub.color);
-  document.getElementById('term-fname').textContent=sub.file;
-  document.getElementById('term-status').textContent='● UPLINK ACTIVE  —  '+sub.label;
-  document.getElementById('terminal').classList.add('open');
-  const body=document.getElementById('term-body');body.innerHTML='';
-  const boot=[
-    {t:'prompt',v:'> SCANNING FOR DATA NODES...'},
-    {t:'prompt',v:'> PACKET LOCK ACQUIRED  ✓'},
-    {t:'dim',   v:'  Decrypting '+sub.file},
-    {t:'dim',   v:'  ────────────────────────────────'},
-  ];
-  const all=[...boot,...sub.lines];
-  let idx=0;
-  function addLine(){
-    if(idx>=all.length){
-      const c=document.createElement('span');c.className='tcursor';body.appendChild(c);
-      body.scrollTop=body.scrollHeight;
-      /* mark this node visited */
-      const nodeKey=S.wing+':'+S.sub;
-      VISITED.add(nodeKey);
-      /* signal: 1 bar per wing sector (first visit of any node in that sector) */
-      const sec=DATA[S.wing];
-      const wingVisited=Object.keys(sec.subs).filter(k=>VISITED.has(S.wing+':'+k)).length;
-      /* use wing's signal value if entire wing done, else partial */
-      const newSig=Math.max(S.signal, wingVisited>=3?sec.signal:sec.signal-1);
-      if(newSig>S.signal)setTimeout(()=>setSignal(newSig),600);
-      /* check all 9 nodes done */
-      if(VISITED.size>=TOTAL_NODES){
-        setTimeout(()=>{setSignal(4);},700);
-        setTimeout(()=>showVictory(),2200);
-      }
-      return;
-    }
-    const ln=all[idx++];
-    const el=document.createElement('div');
-    el.className='tl tl-'+ln.t;el.textContent=ln.v;
-    body.appendChild(el);body.scrollTop=body.scrollHeight;
-    setTimeout(addLine,idx<5?90:35);
-  }
-  addLine();
-}
-function closeTerm(){
-  document.getElementById('terminal').classList.remove('open');
-  document.getElementById('term-body').innerHTML='';
-}
-
-/* ═══════════════════════════════════════════════════════
-   VICTORY
-═══════════════════════════════════════════════════════ */
-function showVictory(){
-  closeTerm();closeDlg();
-  const v=document.getElementById('victory');
-  v.classList.add('show');
-  /* flash title in */
-  const title=document.getElementById('vic-title');
-  title.style.opacity='0';
-  let fl=0;
-  const fi=setInterval(()=>{fl=Math.min(fl+0.08,1);title.style.opacity=fl;if(fl>=1)clearInterval(fi);},30);
-}
-function closeVictory(){
-  document.getElementById('victory').classList.remove('show');
-  /* full reset */
-  VISITED.clear();
-  setSignal(0);
-  S={screen:'main',wing:null,sub:null,px:7,py:9,pdir:2,pstep:0,signal:0,gt:S.gt};
-  buildLabels();
-  document.getElementById('hud-loc').textContent='📡 SECTOR HUB';
-  showDlg(['Welcome back.\n\nAll data restored.\nExplore again anytime.'],'SUIT AI');
-}
-document.getElementById('victory').addEventListener('click',closeVictory);
-document.getElementById('vic-blink').addEventListener('click',e=>{e.stopPropagation();closeVictory();});
-
-/* ═══════════════════════════════════════════════════════
-   SCENE TRANSITIONS
-═══════════════════════════════════════════════════════ */
-let fading=false;
-function fadeGo(cb){
-  if(fading)return;fading=true;
-  const f=document.getElementById('fade');let t=0;
-  const fi=setInterval(()=>{
-    t=Math.min(t+0.15,1);f.style.opacity=t;
-    if(t>=1){clearInterval(fi);cb();let t2=1;
-      const fo=setInterval(()=>{t2=Math.max(t2-0.15,0);f.style.opacity=t2;
-        if(t2<=0){clearInterval(fo);fading=false;}
-      },14);
-    }
-  },14);
-}
-
-function goTo(screen,wing,sub){
-  fadeGo(()=>{
-    closeDlg();S.screen=screen;
-    if(wing!==undefined)S.wing=wing;
-    if(sub!==undefined)S.sub=sub;
-    /* room: player spawns centered below terminal */
-    if(screen==='room'){S.px=7;S.py=11;}
-    else{S.px=7;S.py=9;}
-    S.pdir=2;
-    buildLabels();
-    const locMap={
-      main:'SECTOR HUB',
-      wing:wing?DATA[wing].label+' SECTOR':'',
-      room:sub&&wing?DATA[wing].subs[sub].label:''
-    };
-    document.getElementById('hud-loc').textContent='📡 '+locMap[screen];
-    if(screen==='room'){
-      setTimeout(()=>{
-        const sub_=DATA[S.wing].subs[S.sub];
-        showDlg([
-          sub_.label+'\n\nData node detected nearby.\nApproach the terminal\nand press ENTER\nto uplink.'
-        ],'SUIT AI');
-      },400);
-    }
-  });
-}
-
-/* ═══════════════════════════════════════════════════════
-   MOVEMENT & COLLISION
-═══════════════════════════════════════════════════════ */
-function walkable(nx,ny){
-  if(nx<0||nx>=COLS||ny<0||ny>=ROWS)return false;
-  const t=getMap()[ny][nx];
-  return t!==1&&t!==2;
-}
-
-let moveRep=0;
-const K={};
-
-function tryMove(dx,dy,dir){
-  if(fading||DQ.length>0||document.getElementById('terminal').classList.contains('open'))return;
-  S.pdir=dir;const nx=S.px+dx,ny=S.py+dy;
-  if(!walkable(nx,ny))return;
-  S.px=nx;S.py=ny;S.pstep=(S.pstep+1)%4;
-  const t=getMap()[ny][nx];
-  if(S.screen==='main'){
-    if(t===D)enterWing('education');
-    else if(t===E)enterWing('experience');
-    else if(t===F)enterWing('projects');
-  }
-  if(S.screen==='wing'&&t===G)enterSub(nx);
-}
-
-function enterWing(wing){
-  const sec=DATA[wing];
-  showDlg([
-    `ENTERING ${sec.label} SECTOR\n\nThree data nodes inside.\nEach uplink restores\none bar of signal.`,
-    `Navigate to each\nterminal and connect.\n\nESC — return to hub.`
-  ],'SUIT AI');
-  setTimeout(()=>{closeDlg();goTo('wing',wing);},3200);
-}
-
-function enterSub(nx){
-  const subs=Object.keys(DATA[S.wing].subs);
-  const idx=nx>=5&&nx<=7?1:nx>=9&&nx<=11?2:0;
-  const sub=subs[idx],sub_=DATA[S.wing].subs[sub];
-  showDlg([
-    `${sub_.label}\n\nData node in range.\nApproach terminal\nand press ENTER.`
-  ],'SUIT AI');
-  setTimeout(()=>{closeDlg();goTo('room',S.wing,sub);},2200);
-}
-
-/* ═══════════════════════════════════════════════════════
-   INTERACT
-═══════════════════════════════════════════════════════ */
-function interact(){
-  if(DQ.length>0){advDlg();return;}
-  if(document.getElementById('terminal').classList.contains('open')){closeTerm();return;}
-  const dirs=[[0,-1],[1,0],[0,1],[-1,0]];
-  const[dx,dy]=dirs[S.pdir];const nx=S.px+dx,ny=S.py+dy;
-  if(nx<0||nx>=COLS||ny<0||ny>=ROWS)return;
-  const t=getMap()[ny][nx];
-  if(S.screen==='main'&&t===3)
-    showDlg([
-      'NAVIGATION CONSOLE\n\nSuit uplink: OFFLINE\nSignal bars: 0/4\n\nLocate the 3 sector wings\nto recover lost data.',
-      'EDUCATION ·  EXPERIENCE\nPROJECTS\n\nWalk into any door\nto enter a sector.'
-    ],'CONSOLE');
-  if(S.screen==='wing'&&t===3){
-    const sec=DATA[S.wing];
-    showDlg([
-      sec.label+' SECTOR\n\nThree data nodes here.\nFind each terminal.\n\nPress ESC to\nreturn to hub.'
-    ],'CONSOLE');
-  }
-  if(S.screen==='room'&&t===X)openTerm();
-}
-
-function goBack(){
-  if(document.getElementById('terminal').classList.contains('open')){closeTerm();return;}
-  if(DQ.length>0){closeDlg();return;}
-  if(S.screen==='room'){goTo('wing',S.wing);return;}
-  if(S.screen==='wing'){goTo('main');return;}
-}
-
-/* ═══════════════════════════════════════════════════════
-   INPUT
-═══════════════════════════════════════════════════════ */
-document.addEventListener('keydown',e=>{
-  const k=e.key;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','Enter','z','Z','Escape','x','X',' '].includes(k))e.preventDefault();
-  K[k]=true;
-  if(document.getElementById('victory').classList.contains('show')){
-    if(k==='Enter'||k===' ')closeVictory();
-    return;
-  }
-  if(S.screen==='title'){if(k==='Enter'||k===' ')startGame();return;}
-  if(k==='Enter'||k==='z'||k==='Z')interact();
-  if(k==='Escape'||k==='x'||k==='X')goBack();
+/* ---------- 04 // LOST PAPERS ---------- */
+F({id:"FILE_017", name:"NAZAKAT.rsch", icon:"paper", title:"NAZAKAT: Compliant Morphology & Developmental Learning for Robotic Manipulation",
+  cls:"RESEARCH / ACTIVE", status:"MANUSCRIPT IN PREPARATION", st:"active",
+  meta:[["AUTHORS","P. Sharma, V. Belsare, R. Jaiswal, R. Dalvi, P. Khare"],["ROLE","Lead author / Core AI lead"],["PROJECT","Final-year project, 2026–27"]],
+  body:
+  H.h("ABSTRACT")+
+  H.p(`Robots sent where humans cannot follow (planetary surfaces, the deep sea, collapsed buildings) keep meeting objects they have never seen: fragile, soft, slippery, oddly shaped. Nobody is there to help, and communication delay often rules out remote control. <b>Nazakat</b> (Urdu: <i>delicacy, grace</i>) asks what actually makes a grasp robust under those conditions: a gripper body that physically adapts, a learning process that builds skill in stages, or both.`)+
+  H.h("RESEARCH QUESTION")+
+  H.p(`Does robust delicate manipulation come from <b>compliant hardware</b> (a cephalopod-inspired soft gripper vs. a rigid one), from <b>biomimetic learning</b> (a six-stage curriculum modelled on infant motor milestones vs. standard RL), or from their <b>combination</b>? And do the two add or multiply?`)+
+  H.h("WHY IT MATTERS")+
+  H.p(`In 2009 NASA's Spirit rover drove onto ground that looked solid from orbit, sank, and never got out. Nothing was broken. It simply could not know how that ground would behave before committing. Manipulation has the same problem in miniature, every time a gripper closes on something unfamiliar. The literature improves hardware or learning separately; almost nobody varies both in one controlled design.`)+
+  H.h("EXPERIMENT DESIGN // 2 × 2 FACTORIAL")+
+  H.pre(
+`                    STANDARD RL           DEVELOPMENTAL RL
+                 +-------------------+----------------------+
+  RIGID GRIPPER  |  A. Baseline      |  C. Learning effect  |
+                 +-------------------+----------------------+
+  SOFT GRIPPER   |  B. Hardware      |  D. Full system      |
+                 |     effect        |                      |
+                 +-------------------+----------------------+
+   A vs B = morphology alone   A vs C = curriculum alone   A vs D = both`)+
+  H.h("ARCHITECTURE")+
+  H.pre(
+`  NASA MOLA terrain ──► ROVER CHASSIS (Mars g = 3.71 m/s², traction, slip, rollover)
+                              │
+                              ▼
+                 4-DOF ARM  (DH forward kinematics · numerical Jacobian
+                             damped least-squares IK · per-joint PD, 1.5 rad/s cap)
+                              │
+                 ┌────────────┴────────────┐
+           RIGID PINCH                 SOFT 6-PAD
+         2-point, 40 N max        distributed spring-damper pads
+                 └────────────┬────────────┘
+                              ▼
+          SAC policy (Stable-Baselines3)  obs: 29-D   action: 5-D [-1,1]
+                              │
+                              ▼
+          12-object benchmark: rigid · fragile · deformable · slippery · irregular`)+
+  H.h("DEVELOPMENTAL CURRICULUM")+
+  H.tbl(["STAGE","MILESTONE","WHAT IT REWARDS"],[
+    ["1","Exploration","visiting new 3 cm voxels of workspace"],
+    ["2","Contact","touching new angular sectors of the object"],
+    ["3","Grip discovery","moving the object; −5 if crushed"],
+    ["4","Force learning","holding with minimum necessary force"],
+    ["5","Dexterity","sustained holds, one-off bonus for first grasp"],
+    ["6","Environment adaptation","same reward, but under rover-motion disturbance"]])+
+  H.h("RESULTS")+
+  H.tbl(["CONDITION","TRAIN (best seed)","GENERALIZE (best seed)","3-SEED MEAN (gen.)"],[
+    ["A · rigid + standard","20.0%","11.7%","4.6 ± 6.2%"],
+    ["B · soft + standard","100.0%","85.0%","36.5 ± 42.1%"],
+    ["C · rigid + curriculum","0.0%","0.0%","0.0 ± 0.0%"],
+    ["D · soft + curriculum","35.0%","30.0%","18.1 ± 10.5%"]],[1])+
+  H.ul([
+    `<b>Compliant morphology gave the largest gain.</b> The rigid baseline learned one blunt strategy, squeezing at ~35 N whatever the object, and crushed the egg surrogate and paper cup 70% of the time.`,
+    `<b>The curriculum's early stages worked; its later stages backfired.</b> An uncapped force-overshoot penalty taught the policy that the safest grip is no grip. That was confirmed independently on both grippers. It is a specific, fixable reward-design flaw, not a failure of staged learning itself.`,
+    `<b>No agent could learn at all without control decimation.</b> Commanding raw joint targets every 10 ms never gave the rate-limited PD controller time to arrive. Holding each action for 50 physics steps fixed it, and we report it as a finding rather than hiding it.`,
+    `<b>Honest variance.</b> B is the strongest result and also the least reproducible (15%–100% train success across seeds). The direction held on every seed; the magnitude should be stated carefully.`])+
+  H.h("MY CONTRIBUTION")+
+  H.ul(["Research question, experimental design and lead authorship","Physics simulation environment and RL formulation","Diagnosis of the reward-design and control-decimation failures","Leading the transition to physical hardware ("+H.x("FILE_018","FILE_018")+")"])+
+  H.h("STACK")+H.chips(["Python","Stable-Baselines3","Soft Actor-Critic","custom physics sim","NASA MOLA data","NumPy"])+
+  H.h("STATUS")+H.p(`Simulation study complete across 3 seeds × 4 conditions. Manuscript being prepared for submission. The hardware build is written up as a separate companion paper that cites this one.`)
 });
-document.addEventListener('keyup',e=>{K[e.key]=false;});
 
-let tx0=0,ty0=0;
-const shell=document.getElementById('shell');
-shell.addEventListener('touchstart',e=>{
-  tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;
-  if(S.screen==='title')startGame();
-},{passive:true});
-shell.addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-tx0,dy=e.changedTouches[0].clientY-ty0;
-  if(Math.abs(dx)<15&&Math.abs(dy)<15){interact();return;}
-  if(DQ.length>0||document.getElementById('terminal').classList.contains('open'))return;
-  if(Math.abs(dx)>Math.abs(dy)){dx>0?tryMove(1,0,1):tryMove(-1,0,3);}
-  else{dy>0?tryMove(0,1,2):tryMove(0,-1,0);}
-},{passive:true});
+F({id:"FILE_018", name:"NAZAKAT_HW.rsch", icon:"hw", title:"NAZAKAT // Physical Hardware Realization",
+  cls:"HARDWARE / ACTIVE BUILD", status:"COMPANION PAPER IN PREPARATION", st:"active",
+  meta:[["PARENT",H.x("FILE_017","FILE_017 // NAZAKAT")],["FUNDING","Secured for hardware build"],["GOAL","Measure sim-to-real transfer explicitly"]],
+  body:
+  H.h("WHY A SECOND PAPER")+
+  H.p(`Simulation cannot represent every kind of contact and deformation equally well, and soft bodies are where it struggles most. So the physical build is its own study: take the trained policies off the screen and see what survives contact with the real world.`)+
+  H.h("SYSTEM")+
+  H.pre(
+`   ┌───────────────────────────┐        ┌──────────────────────────┐
+   │  HOST: Raspberry Pi 5 8GB │ action │  MICROCONTROLLER          │
+   │  trained SAC policy  πθ   │──10Hz─►│  decision-step controller │
+   └─────────────▲─────────────┘        └────────────┬─────────────┘
+                 │  FSR pressure / joint state        │ PWM
+                 │                                    ▼
+   ┌─────────────┴─────────────┐        ┌──────────────────────────┐
+   │  GRIPPER (hot-swappable)  │◄──────►│  4-DOF SERVO ARM          │
+   │  rigid  OR  soft 6-pad    │        │  base·shoulder·elbow·wrist│
+   └───────────────────────────┘        └──────────────────────────┘`)+
+  H.h("BUILD NOTES")+
+  H.ul([
+    `<b>Arm:</b> open-source 4-DOF servo design with all four joints the simulation uses; elbow upgraded from SG90 to MG996R for torque.`,
+    `<b>Soft gripper:</b> 6 pressure pads, TPU membrane over force-sensitive resistors (technique adapted from an open-source, peer-reviewed gripper and scaled down), mirroring the simulated 6-pad model.`,
+    `<b>Quick-swap mount:</b> bayonet lock + pogo-pin contacts + passive acoustic ID, so rigid and soft grippers swap on the same arm without touching code.`,
+    `<b>Host:</b> Raspberry Pi 5 runs the trained policy; a microcontroller drives the servos.`])+
+  H.h("WHAT I DO WITH MY HANDS")+H.chips(["servo actuation","force sensing","wiring","3D printing","embedded control"])+
+  H.h("STATUS")+H.p(`Build in progress. Results will be reported as sim-to-real transfer against `+H.x("FILE_017","FILE_017")+`.`)
+});
 
-/* ═══════════════════════════════════════════════════════
-   GAME LOOP
-═══════════════════════════════════════════════════════ */
-function loop(ts){
-  S.gt=ts/16;
-  /* star field on title */
-  if(S.screen==='title'){
-    sx.clearRect(0,0,480,480);
-    STARS.forEach(s=>{
-      const a=0.15+0.7*(0.5+0.5*Math.sin(s.ph+ts/1000*s.sp));
-      sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      sx.fillStyle=`rgba(190,215,255,${a})`;sx.fill();
-    });
+F({id:"FILE_023", name:"TERRAIN_RISK.rsch", icon:"paper", title:"Hybrid APSO–K-Means with Transformer Features for Planetary Terrain Risk",
+  cls:"RESEARCH / COMPLETE", status:"UNPUBLISHED (MANUSCRIPT COMPLETE)", st:"unpub",
+  meta:[["AUTHORS","<b>P. Sharma</b>, V. Belsare, O. Inamdar, Dr. R. Mishra"],["DATE","Apr – May 2026"],["DATA","Synthetic Mars terrain + real Curiosity imagery"],["CODE","721-line C++17 clustering engine + Python ViT / plotting (≈1.3k lines)"]],
+  body:
+  H.h("ABSTRACT")+
+  H.p(`Autonomous rovers need to tell safe ground from risky ground before committing to a drive. Standard K-Means clustering is fragile: it depends on where its random starting centroids land and gets stuck in local minima, and that gets worse in high-dimensional feature spaces. We built a two-stage pipeline: a <b>Vision Transformer</b> turns terrain images into embeddings, then an <b>Adaptive Particle Swarm Optimisation</b> search finds good starting centroids before K-Means refines them.`)+
+  H.h("WHY IT MATTERS")+
+  H.p(`In 2009 the Spirit rover became trapped in soft Martian soil. Reliable, automatic identification of risky terrain from imagery helps both pre-mission route planning and real-time hazard avoidance.`)+
+  H.h("PIPELINE")+
+  H.pre(
+`  terrain image 224×224
+        │
+        ▼
+  ViT-B/16 (ImageNet-pretrained, frozen)  ──►  768-D [CLS] embedding per image
+        │                                        (Python / torchvision → CSV)
+        ▼
+  APSO   30 particles × 100 iterations          (C++17, g++ -O3)
+         each particle = a full set of K centroids in 768-D
+         inertia w decays 0.9 → 0.4   (explore early, exploit late)
+         fitness = mean quantisation error (MQE)
+        │
+        ▼
+  K-Means refinement from the swarm's best  ──►  terrain risk zones
+        │
+        ▼
+  evaluate vs K-Means (random) & K-Means++:  Silhouette · Davies-Bouldin · intra-cluster variance`)+
+  H.h("DATASETS")+
+  H.ul([`<b>Synthetic:</b> 300 Mars-like images, 5 classes (bedrock, sand, gravel, slope, rockfield), 60 each.`,`<b>Real:</b> 500 labelled Mars surface images from the Curiosity rover (Stanboli & Wagstaff, 2017, CC BY-SA 4.0).`,`Real data has no single true K, so it is evaluated at K = 4, 8 and 15.`])+
+  H.h("RESULTS: SYNTHETIC (K = 5)")+
+  H.tbl(["METHOD","SILHOUETTE ↑","DBI ↓","ICV ↓"],[
+    ["APSO-KMeans","0.5445","1.4313","13.78"],
+    ["K-Means (random)","0.4908","1.9488","18.15"],
+    ["K-Means++","0.7218","0.4696","8.77"]],[0])+
+  H.h("RESULTS: REAL CURIOSITY IMAGERY")+
+  H.tbl(["K","METHOD","SILHOUETTE ↑","DBI ↓","ICV ↓","RUNTIME"],[
+    ["4","APSO-KMeans","0.4422","0.8498","79.89","1.74 s"],
+    ["4","K-Means (random)","0.4422","0.8498","79.89","0.01 s"],
+    ["4","K-Means++","0.4275","0.8390","79.24","0.01 s"],
+    ["8","APSO-KMeans","0.3691","1.0467","49.34","3.45 s"],
+    ["8","K-Means (random)","0.4011","1.0396","46.77","0.02 s"],
+    ["8","K-Means++","0.3874","1.1568","49.76","0.03 s"],
+    ["15","APSO-KMeans","0.3077","1.2166","34.93","6.44 s"],
+    ["15","K-Means (random)","0.2543","1.2729","33.52","0.02 s"],
+    ["15","K-Means++","0.3512","0.9927","34.49","0.05 s"]],[6])+
+  H.h("SWARM CONVERGENCE")+
+  H.curve([23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.895, 23.8873, 23.8818, 23.8685, 23.8685, 23.8461, 23.8461, 23.8245, 23.8245, 23.8245, 23.7908, 23.7818, 23.7743, 23.7743, 23.7512, 23.718, 23.6686, 23.6547, 23.6547, 23.6547, 23.6255, 23.6106, 23.5898, 23.5898, 23.5898, 23.5722, 23.5609, 23.5353, 23.5353, 23.5353, 23.5207, 23.51, 23.4818, 23.4818, 23.4739, 23.4647, 23.46, 23.46, 23.4497, 23.4387, 23.4276, 23.4192, 23.4028, 23.4016, 23.3937, 23.3812, 23.3682, 23.3506, 23.3506, 23.3301, 23.3102, 23.2897, 23.2895, 23.2895, 23.2786, 23.2568, 23.2415, 23.2389, 23.2306, 23.223, 23.223, 23.223, 23.192, 23.1856, 23.1756, 23.1756],"SYNTHETIC K=5 · MQE vs iteration: flat until ~35, then steady descent as inertia decays")+
+  H.curve([52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.5696, 52.567, 52.5643, 52.5643, 52.5639, 52.5639, 52.5639, 52.5639, 52.5639, 52.5639, 52.5622, 52.5586, 52.5571, 52.5562, 52.5561, 52.5561, 52.5554, 52.555, 52.554, 52.5538, 52.5538, 52.5525, 52.5513, 52.5508, 52.5494, 52.5483, 52.5475, 52.5471, 52.5463, 52.5448, 52.5442, 52.5431, 52.5425, 52.542, 52.541, 52.5405, 52.5395, 52.538, 52.538, 52.538],"REAL K=15 · 15×768 = 11,520 parameters: the swarm searches for ~60 iterations before it finds a better basin")+
+  H.h("WHAT WE FOUND")+
+  H.ul([`APSO clearly beats random initialisation on synthetic data and at fine granularity on real data. At K = 15, where random starts fall apart, APSO wins on both Silhouette and DBI.`,
+       `At K = 4 APSO and random K-Means land in the <b>same solution</b>: when the natural groups are few and well separated, both find the same basin.`,
+       `It does <b>not</b> consistently beat K-Means++, and the paper says so. Initialisation alone can't fix the limits of the embedding space.`,
+       `It costs ~100–300× more runtime (seconds, not milliseconds). That is fine for pre-mission planning and too slow for tight onboard loops without optimisation.`,
+       `Mission takeaway: if a planner needs many fine-grained risk zones, swarm initialisation is worth the extra compute.`])+
+  H.h("MY CONTRIBUTION")+H.ul(["First author","Framework design and the C++ APSO-KMeans engine","Experimental evaluation across datasets and K values"])+
+  H.h("STACK")+H.chips(["C++17","Python","PyTorch / torchvision","ViT-B/16","PSO","t-SNE","matplotlib"])+
+  H.h("STATUS")+H.p(`Manuscript complete, not yet published.`)
+});
+
+F({id:"FILE_031", name:"HCVCC.rsch", icon:"paper", title:"Perception Is Not Enough: An Algorithm-Aware Security & Usability Evaluation of the HCVCC Text CAPTCHA",
+  cls:"RESEARCH / ACTIVE", status:"AUTOMATED EVAL DONE · STUDIES PENDING", st:"active",
+  meta:[["AUTHORS","<b>P. Sharma</b>, V. Belsare"],["SYSTEM","HCVCC v1.1: Human-Centric Visual–Contextual Cipher"],["SCALE","14,800 puzzles · 43,820 solver trials · 3 corpora"],["FORMAT","IEEE conference paper"]],
+  body:
+  H.h("CAN YOU READ IT?")+
+  H.p(`A sentence has been scattered across a grid, its letters nudged out of place, and three <b>real English words</b> hidden among it as decoys. Type the sentence.`)+
+  `<div class="captcha"><div class="fid" style="font-family:var(--pix);color:var(--amber);font-size:17px">TIER 4 // LEXICAL DECOYS</div>`+H.pre("    p                                 w\n   o end\n     the\n                                                    str\n\n            sa t\n\n                                    e\nka t                              ne\n                                     r\n\n  ater   y                                       n ver\n               s j                                 e\n\n\n                                                              j\n\n                              e\n                             d h\n                open                       in\n                                          w  dow\n\n        j\n         t\n")+
+  `<div class="capin"><input aria-label="Your answer" placeholder="type the hidden sentence" autocomplete="off" spellcheck="false"><button class="go">[ SUBMIT ]</button><button class="n rv">[ REVEAL ]</button></div><div class="capout"></div></div>`+
+  H.p(`<span class="dim">Practice sentence from the paper, not part of any evaluation set.</span>`)+
+  H.h("THE IDEA")+
+  H.p(`CAPTCHAs built on distorted text have mostly fallen to deep learning. HCVCC moves the difficulty from <i>perception</i> to <i>cognition</i>: people read scattered, misspelled, interleaved text using context; programs supposedly can't. This paper tests that assumption properly, under <b>Kerckhoffs' principle</b>, where the attacker knows the full generation algorithm.`)+
+  H.h("GENERATOR // 72 × 28 ASCII GRID")+
+  H.pre(
+`  sentence ─► M1 TOKENISE ─► M2 PHONETIC ─► M3 LAYOUT ─► M4 DECOYS ─► M5 RENDER ─► grid
+                            p: 23 sound-   y_drift:     symbol d +    jitter j
+                            preserving     word order   lexical w     (±1–2 cells)
+                            rules          strictness   (NEW in v1.1)`)+
+  H.h("RESEARCH QUESTIONS")+
+  H.ul(["<b>RQ1</b> How often does an attacker who knows the algorithm pass each tier?","<b>RQ2</b> Which generator components actually create difficulty, and does the ambiguity score measure it?","<b>RQ3</b> On identical puzzles, how do humans and current LLMs compare?"])+
+  H.h("WHAT I BUILT")+
+  H.ul([`<b>HCVCC v1.1</b>, fixing three generator bugs, including one that silently <b>destroyed real letters in 72% of easy puzzles</b>, plus a new <b>lexical decoy</b> defence and Tier 4`,
+        `<b>Four deterministic attackers</b>: naive reader → dictionary tracer over a 57k-word lexicon trie → + phonetic-rule inversion → + bigram language model with beam search. Median ≤ 35 ms per puzzle on one CPU core`,
+        `A sentence-bank attacker, a one-factor ablation suite, a 2,480-puzzle factorial difficulty model, and a legacy v1.0 comparison`,
+        `A strict dev/test split: tuned on Harvard sentences 1–100, reported on 620 held-out sentences. One command reproduces every number; 58 automated tests`,
+        `A single-file offline human-study tool (Latin-square counterbalanced) and a fully logged LLM harness`])+
+  H.h("RQ1 // FULL ATTACKER PASS RATE (620 held-out sentences)")+
+  H.tbl(["TIER","MEAN SCORE","PASS % [95% CI]","VERDICT"],[
+    ["T1 spatial only","75.0","37.1 [33.4, 41.0]",'<span class="red">BROKEN</span>'],
+    ["T2 + phonetic","66.7","18.1 [15.2, 21.3]",'<span class="red">BROKEN</span>'],
+    ["T3 full asymmetry","49.5","2.9 [1.8, 4.5]",'<span class="red">BROKEN</span>'],
+    ["T4 lexical decoys","50.4","0.2 [0.0, 0.9]",'<span class="cyan">HOLDS</span>']],[3])+
+  H.p(`<span class="dim">A CAPTCHA counts as broken above a 1% automated pass rate (Bursztein et al.). Pass = composite score ≥ 80, fixed in advance.</span>`)+
+  H.h("RQ2 // WHAT ACTUALLY MAKES IT HARD")+
+  H.tbl(["FACTOR (ablation around T2)","EFFECT ON SOLVER SCORE"],[
+    ["Word-order disorder","−23.3 points"],["Letter jitter","−15.0 (all from j = 3)"],["Symbol decoys (0 → 20)","−12.4"],["Phonetic respelling","−2.2 (the rules are invertible)"],["Lexical decoys","pass rate 15.5% → 2.5% with one word, 0.5% with three"]],[4])+
+  H.ul([`The original ambiguity score explains only <b>9.9%</b> of out-of-sample difficulty. A new measured index <b>A* = 0.61·O + 0.22·J + 0.15·D + 0.02·P</b> explains 34.5%, which is <b>3.5× better</b>.`,
+        `<b>Sentence-bank attack:</b> if plaintexts come from any fixed bank, even 17,411 sentences, the attacker recovers <b>100%</b>. Plaintexts must be generated fresh.`,
+        `<b>Perceptual noise is not an asymmetry</b> once the generator is known. Semantic coherence (spotting which real words don't belong) is the candidate asymmetry.`])+
+  H.h("WHY IT MATTERS")+
+  H.p(`It's the honest version of a security paper: we attacked our own system as hard as we could, published what broke, and found the one defence that held.`)+
+  H.h("STACK")+H.chips(["Python","tries & beam search","n-gram LM","statistics (Wilson CI, GEE, bootstrap)","React","IEEE LaTeX"])+
+  H.h("STATUS")+H.p(`Generator, attackers and all automated experiments complete and reproducible. Human study and LLM study are the remaining pieces before submission.`),
+  mount:(b)=>{
+    const box=b.querySelector(".captcha"); if(!box) return;
+    const inp=box.querySelector("input"), out=box.querySelector(".capout"), ans="the cat sat near the open window";
+    const norm=t=>t.toLowerCase().replace(/[^a-z ]/g," ").split(/\s+/).filter(Boolean);
+    const check=()=>{ const a=norm(inp.value), t=norm(ans); if(!a.length){ out.innerHTML='<span class="dim">type something first.</span>'; return; }
+      if(a.join(" ")===t.join(" ")){ out.innerHTML='<span class="cyan">HUMAN VERIFIED.</span> The best automated attacker passes only 0.2% of Tier-4 puzzles.'; sfx.ok(); return; }
+      const bag=[...t]; let hit=0; a.forEach(w=>{const k=bag.indexOf(w); if(k>=0){hit++; bag.splice(k,1);} });
+      const f1=hit? 2*hit/(a.length+t.length):0; out.innerHTML=`<span class="amber">${Math.round(f1*100)}% TOKEN MATCH.</span> ${a.some(w=>["opend","opened","after","later","never"].includes(w))?"A decoy got you. ":""}Try again, or reveal.`; sfx.err(); };
+    box.querySelector(".go").onclick=check;
+    inp.addEventListener("keydown",e=>{ e.stopPropagation(); if(e.key==="Enter") check(); });
+    box.querySelector(".rv").onclick=()=>{ out.innerHTML=`ANSWER: <span class="bright">"${ans}"</span><br><span class="dim">decoy words hidden in the grid: <b class="red">opend</b>, <b class="red">after</b>, <b class="red">never</b>. Rejecting them takes judging which words make one coherent event.</span>`; };
   }
-  /* star field on victory screen */
-  if(document.getElementById('victory').classList.contains('show')){
-    vsx.clearRect(0,0,480,480);
-    VSTARS.forEach(s=>{
-      const a=0.1+0.8*(0.5+0.5*Math.sin(s.ph+ts/800*s.sp));
-      vsx.beginPath();vsx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      vsx.fillStyle=`rgba(0,255,204,${a*0.6})`;vsx.fill();
-    });
-  }
-  render();
-  /* movement repeat */
-  if(S.screen!=='title'&&DQ.length===0&&!fading&&!document.getElementById('terminal').classList.contains('open')){
-    moveRep++;const fire=moveRep===1||(moveRep>14&&moveRep%4===0);
-    if(fire){
-      if(K.ArrowUp||K.w)tryMove(0,-1,0);
-      else if(K.ArrowDown||K.s)tryMove(0,1,2);
-      else if(K.ArrowLeft||K.a)tryMove(-1,0,3);
-      else if(K.ArrowRight||K.d)tryMove(1,0,1);
-      else moveRep=0;
+});
+
+F({id:"FILE_042", name:"ROV_ANOMALY.rsch", icon:"paper", title:"Multimodal Deep Learning for Underwater Anomaly Detection & Navigation",
+  cls:"RESEARCH / COMPLETE", status:"UNPUBLISHED", st:"unpub",
+  meta:[["CONTEXT","Team AUV MPSTME research, for UVDC 2025"],["DATE","Aug – Sep 2025"],["ENVIRONMENT","Low-visibility subsea"]],
+  body:
+  H.h("ABSTRACT")+
+  H.p(`Underwater, cameras lie. Turbidity, backscatter and failing light make single-sensor perception unreliable exactly when a vehicle needs it most. This work combines several learned encoders with classical sensor fusion so an autonomous vehicle can detect vents, hazards and debris while keeping track of where it is.`)+
+  H.h("WHY IT MATTERS")+
+  H.p(`Deep-sea exploration, infrastructure inspection and search-and-recovery all happen where visibility is poor and a lost vehicle is expensive. It is also the closest thing Earth has to exploring the ice-covered oceans of Europa and Enceladus.`)+
+  H.h("ARCHITECTURE")+
+  H.pre(
+`   camera frames ──► ResNet encoder ─────► scene features ──┐
+   camera frames ──► U-Net ───────────────► segmentation ────┤
+   sensor stream ──► CNN-LSTM ────────────► temporal context ├──► FUSION ──► anomaly:
+                                                              │              vent / hazard / debris
+   IMU / depth / heading ──► Kalman filter ─► state estimate ─┘──► navigation`)+
+  H.h("METHODOLOGY")+
+  H.ul(["ResNet for appearance features, U-Net for pixel-level segmentation of hazards","CNN-LSTM for temporal patterns across frames and sensor streams","Kalman filtering to fuse noisy navigation sensors into a stable state estimate"])+
+  H.h("RESULT")+
+  H.p(`This perception research fed into Team AUV's design submission, which placed <b>3rd at UVDC 2025, IIT Guwahati</b> (`+H.x("F102","UVDC_2025.rec")+`).`)+
+  H.h("STACK")+H.chips(["Python","ResNet","U-Net","CNN-LSTM","Kalman filter","sensor fusion"])+
+  H.h("STATUS")+H.p(`Design and models complete. Not published.`)
+});
+
+F({id:"FILE_056", name:"TRAFFIC_TIME.rsch", icon:"paper", title:"Travel Time Prediction in Urban Mobility: A Case Study of Mumbai",
+  cls:"RESEARCH / COMPLETE", status:"PRESENTED · NOT YET PUBLISHED", st:"unpub",
+  meta:[["PRESENTED","ICAIISD 2025, GCoE Amravati (Dec 2025)"],["ROLE","Co-author & presenter"],["DATE","Jan – Apr 2025"]],
+  body:
+  H.h("ABSTRACT")+
+  H.p(`Mumbai commutes are famously unpredictable. We collected our own traffic data, engineered features for congestion and rush hour, and compared tree ensembles with a sequence model to predict route travel time, then shipped it as a tool that tells you <i>when</i> to leave.`)+
+  H.h("PIPELINE")+
+  H.pre(
+`  Google Cloud Maps API ──(2 months of live polling)──► raw route times
+          │
+          ▼
+  features: congestion index · rush-hour flags · rolling averages · time of day
+          │
+          ├──► Random Forest
+          ├──► XGBoost
+          └──► pseudo-LSTM (temporal windows)
+          │
+          ▼
+  FastAPI backend ──► JS web app: estimate + best departure window`)+
+  H.h("RESULTS")+
+  H.tbl(["METRIC","BEST"],[["MAE","2.56 min"],["R²","0.94"]],[0,1])+
+  H.h("STACK")+H.chips(["Python","XGBoost","Random Forest","LSTM","Google Cloud APIs","FastAPI","JavaScript"])+
+  H.h("STATUS")+H.p(`Presented at an international conference; journal version not yet published.`)
+});
+
+F({id:"FILE_073", name:"EDGE_VISION.rsch", icon:"paper", title:"All-Weather Traffic Violation Detection on the Edge",
+  cls:"RESEARCH / ACTIVE", status:"EXPERIMENTS RUNNING", st:"active",
+  meta:[["TYPE","Literature review + proposed system"],["DATA","BDD100K (70K train / 10K val)"],["TARGET HW","Jetson / Raspberry Pi"]],
+  body:
+  H.h("THE GAP")+
+  H.p(`Transformer-attention detectors hold up well in fog, rain and night; embedded detectors run cheaply on the roadside. From a review of roughly 170 papers across detection, violation reporting, on-vehicle vision and number-plate recognition, no existing work combined both.`)+
+  H.h("PROPOSED SYSTEM")+
+  H.pre(
+`  road camera ──► CNN-Transformer hybrid backbone ──► INT8 quantisation ──► edge device
+                  (attention for fog / night / rain)    (fit the compute)     (Jetson / RPi)`)+
+  H.h("METHOD")+
+  H.ul(["Literature review compiled into four comparison tables","Training on BDD100K for its dense weather and time-of-day labels","Benchmarking against the BDD100K Faster R-CNN baseline (AP50 54.5%)","Next: a focused 2-class variant that stays edge-deployable"])+
+  H.h("STACK")+H.chips(["PyTorch","CNN-Transformer","INT8 quantization","BDD100K","edge AI"])+
+  H.h("STATUS")+H.p(`Review written; model experiments in progress.`)
+});
+
+F({id:"FILE_088", name:"AI_LAW.rsch", icon:"paper", title:"A Framework for Global AI Law Grounded in Existing Harms",
+  cls:"RESEARCH / POLICY", status:"UNPUBLISHED", st:"unpub",
+  meta:[["WRITTEN AT","HITLAB (DELPHI programme)"],["FIELD","Responsible AI / technology policy"]],
+  body:
+  H.h("ABSTRACT")+
+  H.p(`Most AI regulation starts from hypothetical future risks. This paper proposes a framework for global AI law that starts from harms that are already happening, and from relational ethics: what AI systems do to the relationships between people, institutions and communities.`)+
+  H.h("WHY IT'S HERE")+
+  H.p(`Engineers building autonomous systems (including the ones in this archive) should know where the lines are. This is where I worked out my own.`)+
+  H.h("FULL TEXT")+H.p(H.bad("AWAITING RECOVERY"))+
+  H.h("STATUS")+H.p(`Written; not published.`)
+});
+
+/* ---------- ESCAPED (accepted) ---------- */
+F({id:"FILE_064", name:"SELF_HEALING.pub", icon:"pub", title:"Hybrid Self-Healing Distributed Streaming Infrastructure",
+  cls:"RESEARCH / RECOVERED", status:"ACCEPTED · ICCSDI 2026", st:"pub",
+  meta:[["AUTHORS","<b>P. Sharma</b>, V. Belsare, R. Varshney, R. Jaiswal"],["VENUE","ICCSDI 2026, proceedings by SYBGEN Learning (ISBN 978-81-999473-7-5)"],["NEXT","Invited extension: SN Computer Science (Springer Nature, Scopus)"]],
+  body:
+  H.h("FULL TITLE")+
+  H.p(`<i>Designing and Simulating a Hybrid Self-Healing Distributed Streaming Infrastructure That Combines Predictive Risk Scoring and Gossip Protocols for Fault Tolerance</i>`)+
+  H.h("THE PROBLEM")+
+  H.p(`Streaming systems usually find out a node is failing only after it has failed. Reactive recovery is slow; purely predictive recovery raises false alarms. We combined both.`)+
+  H.h("DESIGN")+
+  H.pre(
+`   node telemetry ──► ML risk scoring ──► "this node is about to fail" ──┐
+                                                                        ├──► adaptive fault isolation
+   peers ──► gossip protocol ──► "this node HAS failed" (decentralised) ─┘        │
+                                                                                 ▼
+                                         reroute · isolate · self-heal · keep throughput`)+
+  H.h("RESULTS")+
+  H.ul([`Average queue congestion cut by roughly <b>35–45%</b>, while staying stable under node failures and traffic spikes.`,`Compared reactive, predictive and adaptive fault-tolerance strategies in simulation.`,`An interactive browser version was built for the Think Distributed 2026 competition.`])+
+  H.h("STATUS")+H.p(`<b class="cyan">Accepted</b> for presentation and publication at ICCSDI 2026. Invited to submit an extended version to the SN Computer Science special issue <i>"Trustworthy Data Intelligence and Secure Computational Systems"</i>.`)
+});
+
+/* ---------- 01 // FIELD SYSTEMS ---------- */
+F({id:"F101", name:"TEAM_AUV.log", icon:"log", title:"Team AUV MPSTME // Programmer & Hardware Integration",
+  cls:"FIELD LOG", status:"ACTIVE · APR 2024 – PRESENT", st:"active",
+  meta:[["UNIT","Autonomous Underwater Vehicle team, MPSTME"],["ROLE","Programmer & hardware integration"],["DEPLOYMENTS","Techfest (IIT Bombay) · Teknofest (Türkiye) · Techniche (IIT Guwahati)"]],
+  body:
+  H.h("SOFTWARE")+
+  H.ul(["Control and perception code for the team's AUV, including trajectory planning, object detection and acoustic localization","Real-time sensor fusion under tight onboard compute limits","Vision-guided navigation over MAVLink ("+H.x("F103","AUV_VISION_NAV.dat")+")"])+
+  H.h("HARDWARE (the part that isn't on the old CV)")+
+  H.ul(["Soldering, rewiring and reconnecting sensors during integration","Tracking down electrical faults between pool runs","Integrating flight controller, sensor arrays and safety mechanisms for mission-critical runs"])+
+  H.h("RESEARCH")+
+  H.ul(["Multimodal anomaly detection & navigation ("+H.x("FILE_042","FILE_042")+")"])+
+  H.h("RECORD")+
+  H.p(`<b>3rd place, Underwater Vehicle Design Challenge 2025</b>, IIT Guwahati → `+H.x("F102","UVDC_2025.rec"))
+});
+
+F({id:"F102", name:"UVDC_2025.rec", icon:"award", title:"UVDC 2025 // 3rd Place",
+  cls:"FIELD RECORD", status:"COMPLETE", st:"done",
+  meta:[["EVENT","Underwater Vehicle Design Challenge, Techniche 2025"],["HOST","IIT Guwahati"],["RESULT","3rd place"]],
+  body:
+  H.h("PROBLEM STATEMENT")+
+  H.p(`Design an ROV capable of deep-sea exploration, with the emphasis on staying stable under extreme pressure and on innovative underwater design.`)+
+  H.h("OUR ENTRY")+
+  H.ul(["Team AUV MPSTME design submission","My contribution: multimodal deep-learning research for the vehicle's navigation and anomaly detection ("+H.x("FILE_042","FILE_042")+")"])+
+  `<p class="big-quote">"Every step was a learning experience."</p>`
+});
+
+F({id:"F103", name:"AUV_VISION_NAV.dat", icon:"dat", title:"Vision-Guided Autonomous Navigation for AUV",
+  cls:"FIELD SYSTEM", status:"COMPLETE · MAR 2025", st:"done",
+  meta:[["PLATFORM","Pixhawk + ArduPilot"],["LINK","MAVLink"],["CONDITIONS","Variable light & turbidity"]],
+  body:
+  H.h("PIPELINE")+
+  H.pre(
+`  camera ─► HSV threshold (orange lane) ─► morphology ─► contours ─► centroid
+                                                                         │
+            Pixhawk / ArduPilot ◄── MAVLink ◄── steering command ◄── heading error`)+
+  H.ul(["Real-time lane-marker detection with HSV filtering, contour extraction and morphological cleanup","Error-based steering closed the loop with the flight controller over MAVLink","Tuned to survive changing illumination and murky water"])+
+  H.chips(["Python","OpenCV","Pixhawk","ArduPilot","MAVLink"])
+});
+
+F({id:"F105", name:"MARS_ROVER_SIM.dat", icon:"dat", title:"Mars Rover Systems Simulator",
+  cls:"FIELD SYSTEM", status:"ONGOING · FEB 2026 –", st:"active",
+  meta:[["TYPE","Physics-based, pedagogical robotics simulator"],["TERRAIN","Mars elevation datasets"]],
+  body:
+  H.h("MODELS")+
+  H.ul(["Traction, slip ratio and rolling resistance","Slope stability and rollover detection","Energy consumption","Differential-drive kinematics"])+
+  H.h("PURPOSE")+
+  H.p(`A modular rover testbed for autonomous navigation (A* and other planners) and for evaluating hardware design trade-offs before anything gets built.`)+
+  H.chips(["Python","Pygame","A*","kinematics","terrain modelling"])
+});
+
+F({id:"F106", name:"R2D2_DROID.dat", icon:"hw", title:"Sensorless R2-D2-Inspired Pathfinding Droid",
+  cls:"FIELD SYSTEM", status:"COMPLETE · MAR – APR 2025", st:"done",
+  meta:[["BODY","3D-printed PLA"],["BRAIN","Arduino UNO + Python planner"]],
+  body:
+  H.h("CONCEPT")+
+  H.p(`A robot that navigates with <b>no onboard sensors</b>: all intelligence lives in the map and the plan.`)+
+  H.ul(["Modelled and 3D-printed an R2-D2-style body","A* pathfinding (NetworkX) on a 20×20 grid, with obstacles simulated in Pygame","Grayscale tactile maps rendered with PIL; command sequences transferred to the robot","Recalculates paths dynamically when obstacles change"])+
+  H.p(`Grew out of the same idea as the tactile maps research → `+H.x("H306","TACTILE_MAPS.pub"))+
+  H.chips(["Arduino","Embedded C","Python","A*","3D printing"])
+});
+
+F({id:"F107", name:"FAUNA.hw", icon:"hw", title:"FAUNA // Wearable Neurosensory Band",
+  cls:"FIELD SYSTEM / PROTOTYPE", status:"DESIGN & PROTOTYPE", st:"active",
+  meta:[["NAME","Frequency-Adaptive Ultradian Neurosensory Aid"],["MCU","ESP32-C3"]],
+  body:
+  H.h("CONCEPT")+
+  H.p(`A wearable that reads the body's autonomic signals and answers with haptic patterns, making invisible physiological states visible to the wearer.`)+
+  H.h("HARDWARE STACK")+
+  H.kv([["MCU","ESP32-C3"],["HEART / HRV","MAX30102"],["SKIN RESPONSE","Grove GSR (EDA)"],["TEMPERATURE","NTC thermistor"],["MOTION","MPU-6050"],["OUTPUT","patterned haptic feedback + companion app"]])+
+  H.p(`Haptic patterns draw on biomimicry research (animal behaviour and biological rhythms) rather than arbitrary vibration.`)
+});
+
+F({id:"F108", name:"BT_CAR.dat", icon:"dat", title:"Bluetooth-Controlled Arduino Car",
+  cls:"FIELD SYSTEM / ORIGIN", status:"COMPLETE · 2023", st:"done",
+  meta:[["NOTE","First machine in the archive"]],
+  body:
+  H.ul(["Motorised car driven from an Android phone via an HC-05 Bluetooth module","Python-based line following","OTP-protected Arduino number lock"])+
+  H.p(`<span class="dim">Where it started.</span>`)
+});
+
+/* ---------- 02 // MACHINE INTELLIGENCE ---------- */
+F({id:"M201", name:"AURA_SOC.exe", icon:"exe", title:"AURA // AI-Powered Security Operations Engine",
+  cls:"MACHINE INTELLIGENCE", status:"BUILT", st:"done",
+  meta:[["DOMAIN","Cybersecurity operations"],["CORE","Retrieval-augmented generation"]],
+  body:
+  H.h("WHAT IT IS")+
+  H.p(`A security operations centre (SOC) assistant that uses retrieval-augmented generation over live threat intelligence to help triage what's happening, and learns from the analyst.`)+
+  H.ul(["RAG pipeline built on the Gemini API","Ingests CISA threat feeds","Human-in-the-loop <b>\"Teach Aura\"</b> mode, where analyst corrections feed back into the system"])+
+  H.chips(["Python","RAG","Gemini API","threat intel","HITL"])
+});
+
+F({id:"M202", name:"GESTURE_3D.dat", icon:"dat", title:"Gesture-Controlled 3D Dashboard",
+  cls:"MACHINE INTELLIGENCE", status:"BUILT", st:"done",
+  meta:[["INPUT","Hand tracking (webcam)"]],
+  body:
+  H.ul(["MediaPipe hand tracking drives a Three.js STL model viewer: rotate and inspect 3D parts with your hands","NASA Mars weather data with ML time-series forecasting"])+
+  H.chips(["MediaPipe","Three.js","JavaScript","time-series ML"])
+});
+
+F({id:"M203", name:"JOSEPHSON_QISKIT.qdat", icon:"q", title:"Josephson Junctions // Quantum Simulation",
+  cls:"MACHINE INTELLIGENCE / QUANTUM", status:"WINNER · POLARIZER 2026", st:"pub",
+  meta:[["TEAM","with Mudith Shetty & Rudra Jaiswal"],["RESULT","Winner, Project Presentation"]],
+  body:
+  H.p(`Studied Josephson junctions (the superconducting building block behind many quantum computers) and their applications, then built a Qiskit simulation to see the behaviour for ourselves.`)+
+  `<p class="big-quote">"Quantum concepts feel a lot less intimidating when they come with shiny medals."</p>`+
+  H.p(`Also: IBM Qiskit Advocate (Mar 2026 → present) and IBM <i>Basics of Quantum Information</i>.`)+
+  H.chips(["Qiskit","quantum computing","superconducting circuits"])
+});
+
+F({id:"M204", name:"URBAN_GROWTH.dat", icon:"dat", title:"Historic Image Processing Pipeline for Measuring Urban Growth",
+  cls:"MACHINE INTELLIGENCE / VISION", status:"ON GITHUB", st:"done",
+  meta:[["INPUT","Before / after image pair"]],
+  body:
+  H.p(`A sequential pipeline that takes a 'before' and 'after' image and produces a complete, quantifiable change mask, turning old photographs into a measurement of how a city grew.`)+
+  H.chips(["Python","OpenCV"])+
+  H.p(H.a(CONFIG.github,"→ github.com/PariS-x"))
+});
+
+F({id:"M205", name:"MATRIX_RERUM.exe", icon:"exe", title:"Matrix Rerum // Gamified Operating Systems",
+  cls:"SOFTWARE", status:"ON GITHUB", st:"done",
+  meta:[["GENRE","Narrative learning game"]],
+  body:
+  H.p(`A narrative platform for learning operating systems where <b>the player is the OS</b>: scheduling trials, resource decisions and consequences.`)+
+  H.p(H.a(CONFIG.github,"→ github.com/PariS-x"))
+});
+
+/* ---------- 03 // HUMAN SYSTEMS ---------- */
+F({id:"H301", name:"HITLAB_DELPHI.log", icon:"log", title:"HITLAB // Health Technology Research",
+  cls:"HUMAN SYSTEMS / FIELD LOG", status:"COMPLETE · AUG 2025 – APR 2026", st:"done",
+  meta:[["ORG","HITLAB, New York (remote)"],["PROGRAMME","DELPHI: Developing Emerging Leaders in Public Health Innovation (WHTI)"],["MENTORSHIP","Weekly sessions with Stan Kachnowski & industry experts"]],
+  body:
+  H.h("MISSION")+
+  H.p(`Nine months researching how technology is reshaping women's health: who is building what, what is working, where regulation is heading, and where AI fits.`)+
+  H.h("RECOVERED SUB-FILES")+
+  H.ul([H.x("H302","FEMTECH_INTEL.dat")+" · market intelligence",H.x("H303","HEALTH_TOOLKITS.dat")+" · cardiovascular health, regulation, AI in healthcare",H.x("H304","RESEARCH_SOP.txt")+" · the workflow I left behind",H.x("FILE_088","FILE_088")+" · AI law framework paper"])+
+  H.h("WHY IT BELONGS HERE")+
+  H.p(`Robots for first responders and rovers on Mars share a question with health tech: <b>who is this actually for, and what happens when it's wrong?</b> This is where I learned to ask it.`)
+});
+F({id:"H302", name:"FEMTECH_INTEL.dat", icon:"dat", title:"FemTech Market Intelligence",
+  cls:"HUMAN SYSTEMS", status:"COMPLETE", st:"done", meta:[["SOURCE","HITLAB DELPHI"]],
+  body:H.ul(["Tracked healthcare trends, startup activity and influential voices","Measured engagement patterns across LinkedIn and X","Turned it into biweekly analytical reports using AI-assisted research methods"])
+});
+F({id:"H303", name:"HEALTH_TOOLKITS.dat", icon:"dat", title:"Digital Health Research & Toolkits",
+  cls:"HUMAN SYSTEMS", status:"COMPLETE", st:"done", meta:[["SOURCE","HITLAB DELPHI"]],
+  body:H.p("Research contributed to presentations and toolkits on:")+H.ul(["Women's cardiovascular health","FemTech strategy","Healthcare regulation","AI in healthcare"])
+});
+F({id:"H304", name:"RESEARCH_SOP.txt", icon:"txt", title:"SOP // AI-Assisted Research Workflows",
+  cls:"HUMAN SYSTEMS", status:"HANDED OVER", st:"done", meta:[["AUDIENCE","Future HITLAB interns"]],
+  body:H.p(`Wrote a standard operating procedure documenting how to run AI-assisted research efficiently and hand knowledge over cleanly, so the next cohort starts where I left off instead of from zero.`)+
+  H.pre(`  track ──► analyse ──► report (biweekly) ──► document ──► hand over`)
+});
+F({id:"H306", name:"TACTILE_MAPS.pub", icon:"pub", title:"Graph Theory for Robotic Tactile Maps for the Visually Impaired",
+  cls:"HUMAN SYSTEMS / PUBLICATION", status:"PRESENTED · ICRTM-2025", st:"pub",
+  meta:[["VENUE","2nd Intl. Conf. on Recent Trends in Mathematics, Hansraj College, University of Delhi (Feb 2025)"],["ROLE","Co-author & presenter"],["RECOGNITION","Certificate of Appreciation"]],
+  body:H.p(`Applying graph theory to generate tactile navigation maps that a robot can follow and a visually impaired person can read by touch.`)+H.p(`Physical cousin → `+H.x("F106","R2D2_DROID.dat"))
+});
+F({id:"H307", name:"PAWTECT.exe", icon:"exe", title:"Pawtect // Stray Animal Rescue Platform",
+  cls:"HUMAN SYSTEMS / BUILD", status:"ACTIVE BUILD", st:"active",
+  meta:[["STACK","Firebase + Google Cloud, PWA"],["MODEL","Own trained injury / urgency classifier"]],
+  body:
+  H.pre(
+`  photo of injured dog ──► injury + urgency model ──► geotagged case on map
+                                                        │
+                           nearby rescuers notified ◄───┘
+                                                        │
+                           case tracked: report ──► pickup ──► treatment`)+
+  H.p(`Rescue is a coordination problem as much as a medical one. Pawtect is a proof of concept for the software side, with a paper planned.`)+
+  H.chips(["Firebase","GCP","PWA","computer vision"])
+});
+F({id:"H308", name:"ADVITYA.log", icon:"log", title:"Volunteer // Advitya",
+  cls:"HUMAN SYSTEMS / SERVICE", status:"MAY 2024", st:"done", meta:[["TYPE","Social services"]],
+  body:H.p(`A month in the daily activities and care of thirty exceptional individuals at Advitya, a creative centre for people with Down syndrome, autism, cerebral palsy and other conditions.`)
+});
+
+/* ---------- 05 // RECORDS ---------- */
+F({id:"R501", name:"RESEARCHER.id", icon:"id", title:"RESEARCHER PROFILE // PARI SHARMA",
+  cls:"PERSONNEL RECORD", status:"IDENTIFIED", st:"done",
+  meta:[["DESIGNATION","B.Tech Computer Engineering (final year)"],["INSTITUTION","SVKM's NMIMS, Mukesh Patel School of Technology Management & Engineering, Mumbai"],["CGPA","3.68 / 4.0"],["GRADUATION","Expected May 2027"]],
+  body:
+  H.h("MISSION")+
+  H.p(`I build autonomous systems for places people can't easily go: underwater, planetary and unstructured terrain. I work across reinforcement learning, computer vision, embedded control and the hardware itself, from simulation to soldering iron.`)+
+  H.h("LONG-TERM OBJECTIVE")+
+  H.p(`Autonomous science for planetary exploration: robots that can decide for themselves what is worth looking at.`)+
+  H.h("SPECIALISATIONS")+
+  H.chips(["Robotics","Reinforcement learning","Computer vision","Embedded systems","Distributed systems","Space tech","Responsible AI"])+
+  H.h("TOOLS")+
+  H.kv([["LANGUAGES","Python, C++, C, Java, JavaScript, SQL, MATLAB"],["AI / ML","SAC / Stable-Baselines3, ViT, ResNet, U-Net, CNN-LSTM, XGBoost, OpenCV, MediaPipe, Qiskit"],["ROBOTICS","Pixhawk, ArduPilot, MAVLink, Arduino, Raspberry Pi, IK, PD control, Kalman filtering, A*"],["HARDWARE","Soldering, sensor wiring, servos, force sensing, 3D printing, CAD"]])+
+  H.h("NEXT")+
+  H.p(`Open to robotics and AI roles on hard problems, and to research. `+H.x("TRANSMIT","Open a transmission →"))
+});
+F({id:"R502", name:"PUBLICATIONS.idx", icon:"pub", title:"PUBLICATION INDEX",
+  cls:"RECORDS", status:"INDEXED", st:"done", meta:[["SEE ALSO",H.x("SEC04","SECTOR 04 // LOST PAPERS")]],
+  body:
+  H.h("ACCEPTED / PUBLISHED")+
+  H.ul([
+   `<b>P. Sharma</b>, V. Belsare, R. Varshney, R. Jaiswal. "Designing and Simulating a Hybrid Self-Healing Distributed Streaming Infrastructure…" <i>ICCSDI 2026</i>, SYBGEN Learning. <b class="cyan">Accepted.</b> Invited extension: SN Computer Science (Springer Nature). `+H.x("FILE_064","→ open"),
+   `"Graph Theory for Robotic Tactile Maps for the Visually Impaired." Presented at <i>ICRTM-2025</i>, Hansraj College, University of Delhi. `+H.x("H306","→ open"),
+   `"A Comparative Analysis of AI Image Generation Models: Stable Diffusion, DALL-E, and Dream by WOMBO." <i>IJCRT</i>, Feb 2024.`])+
+  H.h("IN THE LOST PAPERS SECTOR")+
+  H.ul([H.x("FILE_017","NAZAKAT")+" · "+H.x("FILE_018","NAZAKAT hardware")+" · "+H.x("FILE_023","Terrain risk (APSO-KMeans)")+" · "+H.x("FILE_031","HCVCC")+" · "+H.x("FILE_042","ROV anomaly detection")+" · "+H.x("FILE_056","Travel time prediction")+" · "+H.x("FILE_073","Edge vision")+" · "+H.x("FILE_088","AI law framework")])
+});
+F({id:"R503", name:"AWARDS.log", icon:"award", title:"HONOURS",
+  cls:"RECORDS", status:"VERIFIED", st:"done", meta:[],
+  body:H.ul([
+    "<b>Legends in the Making</b>: achievers' felicitation by the Dean, MPSTME (2026)",
+    "<b>Winner, Polarizer 2026</b>: Project Presentation (Josephson junctions, Qiskit) "+H.x("M203","→"),
+    "<b>3rd Place, UVDC 2025</b>: Techniche, IIT Guwahati "+H.x("F102","→"),
+    "<b>Shortlisted, AutHer Awards 2024</b>: Best Manuscript, JK Paper × The Times of India. Selected from thousands of national entries",
+    "<b>Certificate of Appreciation</b>: ICRTM-2025, University of Delhi"])
+});
+F({id:"R504", name:"CERTS.log", icon:"txt", title:"CREDENTIALS",
+  cls:"RECORDS", status:"VERIFIED", st:"done", meta:[],
+  body:
+  H.tbl(["CREDENTIAL","ISSUER","DATE"],[
+    ["Qiskit Advocate (programme member)","IBM","Mar 2026 →"],
+    ["Basics of Quantum Information","IBM","Mar 2026"],
+    ["DELPHI Internship Certificate","HITLAB","Dec 2025"],
+    ["A New Approach to the Search for Extraterrestrial Life","World Science U","Feb 2025"],
+    ["Machine Learning Training (92%, top performer)","Internshala","Aug 2024"]])
+});
+
+/* ---------- system files ---------- */
+F({id:"README", name:"README.txt", icon:"txt", title:"README.txt", cls:"SYSTEM", status:"READ ME FIRST", st:"done", sys:true, meta:[],
+  body:
+  `<p class="big-quote">Humanity lost the internet.<br>Someone left one archive behind.</p>`+
+  H.p(`This node belonged to a researcher: <b>${CONFIG.name}</b>. Most of it survived. Some of it is locked. Some never reached publication, but it still happened.`)+
+  H.h("HOW TO RECOVER IT")+
+  H.ul(["<b>Double-click</b> a sector on the desktop (single tap on phones)","Open files to recover them. The <b>REC</b> meter in the taskbar tracks archive integrity","Amber links jump between related files","Prefer typing? Open <b>TERMINAL.exe</b> and type <b>help</b>","Short on time? "+H.x("R501","RESEARCHER.id")+" and "+H.x("RESUME","RESUME.pdf")+" are the fast path"])+
+  H.h("SECTORS")+
+  H.pre(
+`  01 // FIELD SYSTEMS          machines that go where people can't
+  02 // MACHINE INTELLIGENCE   learning, vision, security, quantum
+  03 // HUMAN SYSTEMS          health tech, accessibility, rescue
+  04 // LOST PAPERS            restricted: unpublished research
+  05 // RECORDS                identity, publications, honours`)
+});
+F({id:"SIGNALQUEST", name:"signal_quest.bak", icon:"txt", title:"signal_quest.bak", cls:"DELETED", status:"DEPRECATED", st:"done", sys:true, meta:[["PREVIOUS INTERFACE","Signal Quest (2026), a space game portfolio"]],
+  body:H.p(`Previous archive interface. Too colourful for the apocalypse.`)+H.p(`<span class="dim">It walked so this could glitch.</span>`)
+});
+F({id:"HOPE", name:"hope.txt", icon:"txt", title:"hope.txt", cls:"DELETED", status:"???", st:"done", sys:true, meta:[],
+  body:`<p class="big-quote">What a privilege to witness excellence.<br>And what a privilege to chase it.</p>`
+});
+
+/* ============================================================
+   SECTORS
+============================================================ */
+const SECTORS = [
+  {id:"SEC01", no:"01", dir:"FIELD_SYSTEMS", name:"FIELD SYSTEMS", icon:"folder",
+   blurb:`Machines built to work <b>where people can't</b>: underwater, on Mars, in the dark. Robots, embedded control, and the hardware I've soldered, wired and debugged.`,
+   files:["F101","F102","F103","FILE_018","FILE_042","F105","F106","F107","F108"]},
+  {id:"SEC02", no:"02", dir:"MACHINE_INTELLIGENCE", name:"MACHINE INTELLIGENCE", icon:"folder",
+   blurb:`Systems that <b>learn</b>: reinforcement learning, transformers, swarm optimisation, forecasting, retrieval-augmented security, even a little quantum.`,
+   files:["FILE_017","FILE_023","FILE_056","FILE_064","M201","FILE_031","FILE_073","M202","M203","M204","M205"]},
+  {id:"SEC03", no:"03", dir:"HUMAN_SYSTEMS", name:"HUMAN SYSTEMS", icon:"folder",
+   blurb:`<b>Health technology, accessibility, rescue and ethics.</b> Technology is only as good as who it's for. This sector connects the HITLAB research to everything else in the archive.`,
+   files:["H301","H302","H303","H304","FILE_088","H306","H307","H308"]},
+  {id:"SEC04", no:"04", dir:"LOST_PAPERS", name:"LOST PAPERS", icon:"lock", locked:true,
+   blurb:`<b>Some research never reached publication. It still happened.</b> Each file lists the question, why it matters, the method, the results and where it stands now.`,
+   files:["FILE_017","FILE_018","FILE_023","FILE_031","FILE_042","FILE_056","FILE_073","FILE_088"]},
+  {id:"SEC05", no:"05", dir:"RECORDS", name:"RECORDS", icon:"folder",
+   blurb:`Identity, publications, honours and credentials. <b>The official paperwork.</b>`,
+   files:["R501","R502","R503","R504"]}
+];
+const LOST = SECTORS[3];
+
+/* ============================================================
+   ICONS (pixel SVG)
+============================================================ */
+const G="#8dffb0",D="#2f6b44",A="#ffbf5a",R="#ff4d5e",C="#6ff6ff",K="#030604";
+const sv=(inner,vb=16)=>`<svg viewBox="0 0 ${vb} ${vb}" shape-rendering="crispEdges" aria-hidden="true">${inner}</svg>`;
+const r=(x,y,w,h,f)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"/>`;
+const ICON = {
+  folder: sv(r(1,3,6,2,G)+r(1,4,14,10,G)+r(2,6,12,7,D)+r(2,6,12,1,G)),
+  lock:   sv(r(1,3,6,2,R)+r(1,4,14,10,R)+r(2,6,12,7,"#4a1118")+r(6,7,4,1,A)+r(5,8,1,2,A)+r(10,8,1,2,A)+r(4,10,8,4,A)+r(7,11,2,2,K)),
+  unlock: sv(r(1,3,6,2,A)+r(1,4,14,10,A)+r(2,6,12,7,"#4a3510")+r(9,7,4,1,G)+r(12,8,1,2,G)+r(4,10,8,4,G)+r(7,11,2,2,K)),
+  txt:    sv(r(3,1,8,1,G)+r(3,1,1,14,G)+r(3,14,10,1,G)+r(12,4,1,11,G)+r(10,1,1,3,G)+r(11,3,2,1,G)+r(5,5,5,1,D)+r(5,7,6,1,D)+r(5,9,6,1,D)+r(5,11,4,1,D)),
+  log:    sv(r(3,1,10,14,G)+r(4,2,8,12,K)+r(5,4,6,1,G)+r(5,6,4,1,D)+r(5,8,6,1,D)+r(5,10,5,1,D)+r(5,12,3,1,A)),
+  dat:    sv(r(2,2,12,12,G)+r(3,3,10,10,K)+r(4,4,2,2,G)+r(7,4,2,2,D)+r(10,4,2,2,G)+r(4,7,2,2,D)+r(7,7,2,2,G)+r(10,7,2,2,D)+r(4,10,2,2,G)+r(7,10,2,2,D)+r(10,10,2,2,G)),
+  paper:  sv(r(3,1,10,14,G)+r(4,2,8,12,K)+r(5,4,6,1,G)+r(5,6,6,1,D)+r(5,8,6,1,D)+r(8,10,5,4,R)+r(9,11,3,2,K)+r(10,11,1,2,R)),
+  pub:    sv(r(3,1,10,14,C)+r(4,2,8,12,K)+r(5,4,6,1,C)+r(5,6,6,1,D)+r(5,8,6,1,D)+r(9,10,3,1,C)+r(10,11,1,3,C)+r(8,12,1,1,C)),
+  hw:     sv(r(4,4,8,8,G)+r(5,5,6,6,K)+r(6,6,4,4,A)+r(2,5,2,1,G)+r(2,7,2,1,G)+r(2,9,2,1,G)+r(12,5,2,1,G)+r(12,7,2,1,G)+r(12,9,2,1,G)+r(5,2,1,2,G)+r(7,2,1,2,G)+r(9,2,1,2,G)+r(5,12,1,2,G)+r(7,12,1,2,G)+r(9,12,1,2,G)),
+  exe:    sv(r(1,2,14,12,G)+r(2,5,12,8,K)+r(2,3,9,1,K)+r(12,3,2,1,R)+r(4,7,1,1,G)+r(5,8,1,1,G)+r(4,9,1,1,G)+r(7,9,4,1,A)),
+  term:   sv(r(1,2,14,12,D)+r(2,3,12,10,K)+r(3,5,1,1,G)+r(4,6,1,1,G)+r(3,7,1,1,G)+r(6,7,4,1,G)+r(1,2,14,1,G)),
+  id:     sv(r(1,3,14,10,G)+r(2,4,12,8,K)+r(3,5,4,5,A)+r(4,6,2,2,K)+r(8,6,5,1,G)+r(8,8,4,1,D)+r(8,10,5,1,D)),
+  award:  sv(r(5,1,6,1,A)+r(4,2,8,5,A)+r(5,3,6,3,K)+r(7,3,2,3,A)+r(6,7,4,2,A)+r(7,9,2,3,A)+r(5,12,6,2,A)+r(2,2,2,3,A)+r(12,2,2,3,A)),
+  q:      sv(r(6,6,4,4,C)+r(2,7,3,2,D)+r(11,7,3,2,D)+r(7,2,2,3,D)+r(7,11,2,3,D)+r(3,3,2,2,C)+r(11,11,2,2,C)+r(11,3,2,2,G)+r(3,11,2,2,G)),
+  pdf:    sv(r(3,1,10,14,R)+r(4,2,8,12,K)+r(5,4,2,4,R)+r(7,4,1,2,R)+r(9,4,2,1,R)+r(9,5,1,3,R)+r(5,10,6,1,D)+r(5,12,4,1,D)),
+  trash:  sv(r(3,3,10,1,G)+r(6,1,4,2,G)+r(4,4,8,11,G)+r(5,5,6,9,K)+r(6,6,1,7,D)+r(8,6,1,7,D)+r(10,6,1,6,R)),
+  signal: sv(r(7,6,2,9,G)+r(6,4,4,2,A)+r(3,2,1,6,D)+r(12,2,1,6,D)+r(1,1,1,8,D)+r(14,1,1,8,D)),
+  link:   sv(r(0,10,6,6,K)+r(1,11,4,4,A)+r(2,13,1,1,K)+r(3,12,1,1,K)+r(3,13,1,1,K))
+};
+
+/* ============================================================
+   STATE
+============================================================ */
+const $=s=>document.querySelector(s);
+const state = { unlocked:false, seen:new Set(), sound:true, z:10, wins:{}, booted:false, completed:false };
+const store = { get(k){try{return JSON.parse(localStorage.getItem("ps07_"+k))}catch(e){return null}}, set(k,v){try{localStorage.setItem("ps07_"+k,JSON.stringify(v))}catch(e){}} };
+(()=>{const s=store.get("seen"); if(Array.isArray(s)) s.forEach(x=>FILES[x]&&state.seen.add(x)); if(store.get("unlocked")) state.unlocked=true; if(store.get("snd")===false) state.sound=false;})();
+const RECOVERABLE = Object.values(FILES).filter(f=>!f.sys).map(f=>f.id);
+
+/* ============================================================
+   SOUND
+============================================================ */
+let AC=null;
+function beep(freq=880,dur=.03,type="square",vol=.025){
+  if(!state.sound) return;
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type=type; o.frequency.value=freq; g.gain.value=vol;
+    g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime+dur);
+    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+dur+.02);
+  }catch(e){}
+}
+const sfx = {
+  key:()=>beep(1400+Math.random()*500,.012,"square",.012),
+  open:()=>{beep(660,.05);setTimeout(()=>beep(990,.06),55)},
+  close:()=>{beep(520,.05);setTimeout(()=>beep(330,.07),50)},
+  err:()=>{beep(140,.18,"sawtooth",.03)},
+  ok:()=>{beep(880,.05);setTimeout(()=>beep(1320,.09),70)},
+  hum:()=>{beep(55,.9,"sine",.05)}
+};
+
+/* ============================================================
+   FX: noise + random glitch
+============================================================ */
+const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+(function noise(){
+  const c=$("#noise"), x=c.getContext("2d"), img=x.createImageData(c.width,c.height);
+  let t=0;
+  (function loop(ts){
+    if(ts-t>80){ t=ts;
+      for(let i=0;i<img.data.length;i+=4){const v=Math.random()*255|0; img.data[i]=v*.6;img.data[i+1]=v;img.data[i+2]=v*.7;img.data[i+3]=255;}
+      x.putImageData(img,0,0);
     }
-    if(!K.ArrowUp&&!K.ArrowDown&&!K.ArrowLeft&&!K.ArrowRight&&!K.w&&!K.a&&!K.s&&!K.d)moveRep=0;
+    if(!reduce) requestAnimationFrame(loop);
+  })(0);
+})();
+function glitch(){ if(reduce) return; const s=$("#screen"); s.classList.remove("glitch"); void s.offsetWidth; s.classList.add("glitch"); setTimeout(()=>s.classList.remove("glitch"),240); }
+function scheduleGlitch(){ setTimeout(()=>{ glitch(); scrambleTitle(); scheduleGlitch(); }, 7000+Math.random()*11000); }
+const GLYPHS="█▓▒░<>/\\|#$%&*+=?@01";
+function scramble(el,final,dur=500){
+  if(reduce){el.textContent=final;return;}
+  const start=performance.now();
+  (function f(now){
+    const p=Math.min(1,(now-start)/dur), n=Math.floor(final.length*p);
+    el.textContent = final.slice(0,n)+[...final.slice(n)].map(ch=>ch===" "?" ":GLYPHS[Math.random()*GLYPHS.length|0]).join("");
+    if(p<1) requestAnimationFrame(f); else el.textContent=final;
+  })(start);
+}
+function scrambleTitle(){
+  const t=[...document.querySelectorAll(".win:not(.min) .ttl")]; if(!t.length) return;
+  const el=t[Math.random()*t.length|0]; scramble(el, el.dataset.t||el.textContent, 450);
+}
+
+/* ============================================================
+   BOOT SEQUENCE
+============================================================ */
+const sleep=ms=>new Promise((res,rej)=>setTimeout(()=>skipFlag?rej("skip"):res(),skipFlag?0:ms));
+let skipFlag=false;
+const log=$("#bootlog");
+async function typeLine(text,{speed=14,cls=""}={}){
+  const span=document.createElement("span"); if(cls) span.className=cls; log.appendChild(span);
+  for(let i=0;i<text.length;i++){
+    if(skipFlag) throw "skip";
+    span.textContent+=text[i];
+    if(text[i]!==" " && i%2===0) sfx.key();
+    await new Promise(r=>setTimeout(r,speed));
   }
-  requestAnimationFrame(loop);
+  log.appendChild(document.createTextNode("\n"));
+  return span;
+}
+function put(html){ const s=document.createElement("span"); s.innerHTML=html; log.appendChild(s); log.appendChild(document.createTextNode("\n")); return s;}
+async function bar(target,{len=10,label=""}={}){
+  const s=put(""); let p=0;
+  while(p<target){ if(skipFlag) throw "skip"; p=Math.min(target,p+Math.ceil(Math.random()*4)); const f=Math.round(p/100*len);
+    s.innerHTML=`${label}<span class="bar">${"█".repeat(f)}${"░".repeat(len-f)}</span>  ${p}%`; await new Promise(r=>setTimeout(r,45)); }
+  const f=Math.round(target/100*len); s.innerHTML=`${label}<span class="bar">${"█".repeat(f)}${"░".repeat(len-f)}</span>  ${target}%`;
+}
+async function boot(){ try{ await bootInner(); }catch(e){} }
+async function bootInner(){
+  $("#power").style.display="none"; log.style.display="block"; sfx.hum();
+  const bios=[
+    "PS-07 NEURAL-BIOS v3.11   (C) 2071 LAST ARCHIVE CONSORTIUM",
+    "CPU  : SALVAGED HYBRID CORE @ 4.77 MHz",
+    "MEM  : 640K ............................... OK",
+    "DISK : ARCHIVE_NODE_PS07 .................. FOUND",
+    `       SECTORS DETECTED ................... 05`,
+    `       UNPUBLISHED FILES .................. ${String(LOST.files.length).padStart(2,"0")}`,
+    "       BAD SECTORS ........................ 1,337",
+    "LOADING ARCHIVE OS 0.89 ..."
+  ];
+  for(const l of bios){ await typeLine(l,{speed:6}); await sleep(60); }
+  await sleep(500); glitch(); log.innerHTML=""; await sleep(250);
+
+  await typeLine("YEAR 2089",{speed:40,cls:"bright"}); await sleep(450);
+  put(""); await typeLine("GLOBAL NETWORK STATUS",{speed:18});
+  await bar(41); await sleep(400);
+  put(""); await typeLine("ARCHIVE NODE // PS-07",{speed:18});
+  put(`STATUS: <span class="red blink">COMPROMISED</span>`); await sleep(700);
+  put("");
+  const s=put("&gt; Searching"); for(let i=0;i<6 && !skipFlag;i++){ s.innerHTML+="."; sfx.key(); await sleep(170);} await sleep(250);
+  put(""); await typeLine("RESEARCHER IDENTIFIED:",{speed:18});
+  const nm=put(`<span class="bright" style="font-size:1.6em;letter-spacing:.08em"></span>`); scramble(nm.firstChild,CONFIG.name,900); await sleep(1100); glitch();
+  put(""); await typeLine("> ARCHIVE RECOVERY PROTOCOL INITIATED",{speed:22,cls:"amber"}); await sleep(900);
+  if(!skipFlag) showWelcome();
+}
+function showWelcome(){
+  if($("#welcome")) return;
+  log.innerHTML=""; log.style.display="none";
+  const wd=document.createElement("div"); wd.id="welcome"; wd.style.cssText="flex:1;display:flex"; $("#boot").insertBefore(wd,$("#skip"));
+  wd.innerHTML=`<div class="welcome"><h1 data-t="WELCOME TO THE LAST ARCHIVE.">WELCOME TO THE LAST ARCHIVE.</h1>
+  <div class="go"><div>&gt; ${state.seen.size? "RESUMING RECOVERY: "+pct()+"% RESTORED":"THE ARCHIVE IS DAMAGED. RECOVER WHAT YOU CAN."}<span class="cursor" style="margin-left:8px"></span></div>
+  <button id="enter">[ ENTER ARCHIVE ]</button></div></div>`;
+  $("#skip").style.display="none";
+  $("#enter").onclick=enterDesktop; $("#enter").focus({preventScroll:true});
+  glitch();
+}
+function enterDesktop(){
+  if(state.booted) return; state.booted=true;
+  sfx.ok(); glitch();
+  $("#boot").style.display="none"; $("#desktop").style.display="block";
+  buildDesktop(); scheduleGlitch();
+  setTimeout(()=>{ if(!state.seen.has("README")) openFile("README"); else toast("WELCOME BACK. "+pct()+"% RECOVERED."); },350);
+}
+function powerOn(e){
+  if(e && e.target && e.target.id==="skip") return;
+  document.removeEventListener("keydown",powerOn); $("#boot").removeEventListener("click",powerOn);
+  boot();
+}
+document.addEventListener("keydown",powerOn);
+$("#boot").addEventListener("click",powerOn);
+$("#skip").addEventListener("click",e=>{ e.stopPropagation(); skipFlag=true; document.removeEventListener("keydown",powerOn); $("#boot").removeEventListener("click",powerOn); $("#power").style.display="none"; showWelcome(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter" && $("#enter") && !state.booted && document.activeElement!==$("#enter")) enterDesktop(); });
+
+/* ============================================================
+   DESKTOP
+============================================================ */
+const DESK = [
+  {label:"RESEARCHER.id", icon:"id", act:()=>openFile("R501")},
+  ...SECTORS.map(s=>({label:`${s.no}_${s.dir.replace("INTELLIGENCE","INTEL")}`, icon:s.locked&&!state.unlocked?"lock":s.icon, sector:s.id, act:()=>openSector(s.id)})),
+  {label:"TERMINAL.exe", icon:"term", act:()=>openTerminal()},
+  {label:"README.txt", icon:"txt", act:()=>openFile("README")},
+  {label:"RESUME.pdf", icon:"pdf", act:()=>openResume()},
+  {label:"TRANSMIT.exe", icon:"signal", act:()=>openTransmit()},
+  {label:"BURNT_DATA", icon:"trash", act:()=>openTrash()}
+];
+const WALL=`
+                     ┌──────────────────────┐
+                     │     LAST ARCHIVE     │
+                     │     NODE  PS-07      │
+                     └──────────┬───────────┘
+                                │
+      ┌───────────┬─────────────┼─────────────┬───────────┐
+      ▼           ▼             ▼             ▼           ▼
+   ┌─────┐     ┌─────┐       ┌─────┐       ┌─────┐     ┌─────┐
+   │ 01  │     │ 02  │       │ 03  │       │ 04  │     │ 05  │
+   └─────┘     └─────┘       └─────┘       └──▓──┘     └─────┘
+    FIELD      MACHINE        HUMAN         LOST       RECORDS
+   SYSTEMS     INTELL.       SYSTEMS       PAPERS
+                                          [LOCKED]
+
+        GLOBAL NETWORK ████░░░░░░ 41%   //   SIGNAL: WEAK`;
+function buildDesktop(){
+  $("#wallart").textContent=WALL;
+  const box=$("#icons"); box.innerHTML="";
+  const touch = matchMedia("(pointer:coarse)").matches;
+  DESK.forEach((d,i)=>{
+    const el=document.createElement("div"); el.className="icon"; el.tabIndex=0; el.dataset.i=i; if(d.sector) el.dataset.sector=d.sector;
+    el.innerHTML=ICON[d.icon]+`<span>${d.label.replace(/([_.])/g,"$1<wbr>")}</span>`;
+    el.addEventListener("click",()=>{ document.querySelectorAll(".icon.sel").forEach(x=>x.classList.remove("sel")); el.classList.add("sel"); if(touch){ d.act(); } });
+    el.addEventListener("dblclick",()=>d.act());
+    el.addEventListener("keydown",e=>{ if(e.key==="Enter") d.act(); });
+    box.appendChild(el);
+  });
+  $("#desktop").addEventListener("click",e=>{ if(e.target.id==="desktop"||e.target.id==="wall"||e.target.id==="icons"||e.target.closest("#wall")) document.querySelectorAll(".icon.sel").forEach(x=>x.classList.remove("sel")); if(!e.target.closest("#startmenu")&&!e.target.closest("#startbtn")) toggleStart(false); });
+  buildMenu(); updateRec(); clock(); setInterval(clock,15000);
+  $("#sndbtn").textContent="SND:"+(state.sound?"ON":"OFF");
+  $("#sndbtn").onclick=()=>{ state.sound=!state.sound; store.set("snd",state.sound); $("#sndbtn").textContent="SND:"+(state.sound?"ON":"OFF"); };
+  $("#startbtn").onclick=e=>{ e.stopPropagation(); toggleStart(); };
+}
+function refreshLockIcon(){
+  const el=document.querySelector(`.icon[data-sector="SEC04"]`); if(el) el.querySelector("svg").outerHTML=ICON[state.unlocked?"unlock":"lock"];
+}
+function buildMenu(){
+  const items=[
+    ["id","RESEARCHER PROFILE",()=>openFile("R501")],
+    ...SECTORS.map(s=>[s.locked&&!state.unlocked?"lock":"folder",`${s.no} // ${s.name}`,()=>openSector(s.id)]),
+    "-",
+    ["term","TERMINAL",()=>openTerminal()],
+    ["pdf","RESUME.pdf",()=>openResume()],
+    ["signal","TRANSMIT (CONTACT)",()=>openTransmit()],
+    "-",
+    ["exe","SHUT DOWN...",()=>shutdown()]
+  ];
+  const ul=$("#menulist"); ul.innerHTML="";
+  items.forEach(it=>{
+    if(it==="-"){ const s=document.createElement("li"); s.className="menu-sep"; ul.appendChild(s); return; }
+    const li=document.createElement("li"); li.className="menu-item"; li.tabIndex=0;
+    li.innerHTML=`<span style="width:20px;height:20px;display:inline-block">${ICON[it[0]]}</span>${it[1]}`;
+    li.onclick=()=>{ toggleStart(false); it[2](); }; li.onkeydown=e=>{ if(e.key==="Enter") li.onclick(); };
+    ul.appendChild(li);
+  });
+}
+function toggleStart(force){ const m=$("#startmenu"), on = force===undefined ? !m.classList.contains("open") : force; m.classList.toggle("open",on); $("#startbtn").classList.toggle("on",on); if(on) sfx.key(); }
+function clock(){ const d=new Date(); $("#clock").textContent=`2089-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; }
+let toastT;
+function toast(msg){ const t=$("#toast"); t.innerHTML=msg; t.style.display="block"; clearTimeout(toastT); toastT=setTimeout(()=>t.style.display="none",3200); }
+
+/* ---------- recovery meter ---------- */
+function pct(){ const n=RECOVERABLE.filter(id=>state.seen.has(id)).length; return Math.round(n/RECOVERABLE.length*100); }
+function markSeen(id){
+  if(state.seen.has(id)) return; state.seen.add(id); store.set("seen",[...state.seen]); updateRec();
+  document.querySelectorAll(`.file[data-id="${id}"]`).forEach(x=>x.classList.add("seen"));
+  if(!FILES[id].sys) toast(`FILE RECOVERED <span class="dim">//</span> ${FILES[id].name} <span class="dim">//</span> ${pct()}%`);
+  if(pct()>=100 && !state.completed){ state.completed=true; setTimeout(restored,900); }
+}
+function updateRec(){
+  const p=pct(), f=Math.round(p/100*8);
+  $("#recbar").textContent="█".repeat(f)+"░".repeat(8-f); $("#recpct").textContent=p+"%";
+  $("#netpct").textContent=(41+Math.round(p*.01))+"%";
+  if(p>=100) state.completed=true;
+}
+function restored(){
+  glitch(); sfx.ok(); $("#tray").classList.add("integrity-done");
+  openWindow({id:"restored",title:"SIGNAL_RESTORED.sys",icon:"signal",w:520,h:420,render:b=>{
+    b.innerHTML=`<div class="doc"><div class="dochead"><div class="fid">SYSTEM // ${new Date().toLocaleTimeString()}</div><div class="tt">ARCHIVE 100% RECOVERED</div>
+    <div class="meta"><span>GLOBAL NETWORK</span><span>41% → 42%</span><span>NODE PS-07</span><span class="cyan">ONLINE</span></div></div>
+    <p class="big-quote">One archive recovered.<br>The network is 1% more alive.</p>
+    ${H.p("You read everything. That makes you exactly the kind of person the researcher wants to talk to.")}
+    ${H.p(H.x("TRANSMIT","→ Open a transmission"))}</div>`; }});
 }
 
-/* ═══════════════════════════════════════════════════════
-   START
-═══════════════════════════════════════════════════════ */
-function startGame(){
-  document.getElementById('title').style.display='none';
-  setSignal(0);S.screen='main';S.px=7;S.py=9;
-  buildLabels();
-  document.getElementById('hud-loc').textContent='📡 SECTOR HUB';
-  setTimeout(()=>{
-    showDlg([
-      'SIGNAL LOST\n\nSuit uplink offline.\nYou are drifting in\ndeep space — zero\ncommunications.',
-      'Three data sectors\nare nearby:\n\n🎓 EDUCATION\n💼 EXPERIENCE\n⚡ PROJECTS',
-      'Walk through each door.\nFind the terminals inside\nand uplink your suit.\n\nRecover all data. 📡'
-    ],'DISTRESS BEACON');
-  },500);
+/* ============================================================
+   WINDOW MANAGER
+============================================================ */
+const layer=()=>$("#winlayer");
+function openWindow({id,title,icon="txt",w=640,h=480,render,status}){
+  if(state.wins[id]){ const W=state.wins[id]; W.el.classList.remove("min"); focusWin(id); return W; }
+  const el=document.createElement("div"); el.className="win"; el.setAttribute("role","dialog"); el.setAttribute("aria-label",title);
+  const vw=innerWidth, vh=innerHeight-40, n=Object.keys(state.wins).length;
+  w=Math.min(w,vw-20); h=Math.min(h,vh-20);
+  const x=Math.max(8,Math.min(vw-w-8, (vw-w)/2 + (n%6)*26 - 60 + (Math.random()*30|0)));
+  const y=Math.max(8,Math.min(vh-h-8, (vh-h)/2 + (n%6)*22 - 50));
+  Object.assign(el.style,{left:x+"px",top:y+"px",width:w+"px",height:h+"px"});
+  el.innerHTML=`<div class="titlebar">${ICON[icon]||""}<div class="ttl" data-t="${esc(title)}">${esc(title)}</div>
+    <button class="wbtn" data-a="min" aria-label="Minimise">_</button><button class="wbtn" data-a="max" aria-label="Maximise">□</button><button class="wbtn x" data-a="close" aria-label="Close">×</button></div>
+    <div class="wbody"></div>${status?`<div class="status">${status}</div>`:""}<div class="grip"></div>`;
+  layer().appendChild(el);
+  const W={id,el,body:el.querySelector(".wbody"),title}; state.wins[id]=W;
+  el.addEventListener("pointerdown",()=>focusWin(id));
+  el.querySelector('[data-a="close"]').onclick=e=>{e.stopPropagation();closeWin(id)};
+  el.querySelector('[data-a="min"]').onclick=e=>{e.stopPropagation();el.classList.add("min");el.classList.remove("focus");renderTasks()};
+  el.querySelector('[data-a="max"]').onclick=e=>{e.stopPropagation();el.classList.toggle("max")};
+  const tb=el.querySelector(".titlebar");
+  tb.addEventListener("dblclick",e=>{ if(!e.target.closest(".wbtn")) el.classList.toggle("max"); });
+  drag(tb,el); resize(el.querySelector(".grip"),el);
+  render && render(W.body,W);
+  W.body.addEventListener("click",e=>{ const x=e.target.closest("[data-open]"); if(x){ e.preventDefault(); openAny(x.dataset.open); } });
+  W.body.addEventListener("keydown",e=>{ const x=e.target.closest("[data-open]"); if(x && e.key==="Enter"){ openAny(x.dataset.open); } });
+  focusWin(id); renderTasks(); sfx.open();
+  const ttl=el.querySelector(".ttl"); scramble(ttl,title,380);
+  return W;
+}
+function focusWin(id){
+  Object.values(state.wins).forEach(w=>w.el.classList.remove("focus"));
+  const W=state.wins[id]; if(!W) return; W.el.style.zIndex=++state.z; W.el.classList.add("focus"); renderTasks();
+  if(W.onfocus) W.onfocus();
+}
+function closeWin(id){ const W=state.wins[id]; if(!W) return; W.el.remove(); delete state.wins[id]; renderTasks(); sfx.close(); }
+function renderTasks(){
+  const t=$("#tasks"); t.innerHTML="";
+  Object.values(state.wins).forEach(W=>{
+    const b=document.createElement("button"); b.className="tb-btn"+(W.el.classList.contains("focus")?" active":""); b.textContent=W.title;
+    b.onclick=()=>{ if(W.el.classList.contains("min")){W.el.classList.remove("min");focusWin(W.id)} else if(W.el.classList.contains("focus")){W.el.classList.add("min");W.el.classList.remove("focus");renderTasks()} else focusWin(W.id); };
+    t.appendChild(b);
+  });
+}
+function small(){ return innerWidth<=720; }
+function drag(handle,el){
+  handle.addEventListener("pointerdown",e=>{
+    if(e.target.closest(".wbtn")||small()||el.classList.contains("max")) return;
+    const sx=e.clientX, sy=e.clientY, ox=el.offsetLeft, oy=el.offsetTop; handle.setPointerCapture(e.pointerId);
+    const mv=ev=>{ el.style.left=Math.max(-el.offsetWidth+80,Math.min(innerWidth-80,ox+ev.clientX-sx))+"px"; el.style.top=Math.max(0,Math.min(innerHeight-70,oy+ev.clientY-sy))+"px"; };
+    const up=()=>{ handle.removeEventListener("pointermove",mv); handle.removeEventListener("pointerup",up); };
+    handle.addEventListener("pointermove",mv); handle.addEventListener("pointerup",up);
+  });
+}
+function resize(g,el){
+  g.addEventListener("pointerdown",e=>{
+    e.stopPropagation(); const sx=e.clientX, sy=e.clientY, ow=el.offsetWidth, oh=el.offsetHeight; g.setPointerCapture(e.pointerId);
+    const mv=ev=>{ el.style.width=Math.max(300,ow+ev.clientX-sx)+"px"; el.style.height=Math.max(180,oh+ev.clientY-sy)+"px"; };
+    const up=()=>{ g.removeEventListener("pointermove",mv); g.removeEventListener("pointerup",up); };
+    g.addEventListener("pointermove",mv); g.addEventListener("pointerup",up);
+  });
 }
 
-document.getElementById('title').addEventListener('click',startGame);
-setSignal(0);
-requestAnimationFrame(loop);
+/* ============================================================
+   OPENERS
+============================================================ */
+function openAny(id){
+  if(id==="TRANSMIT") return openTransmit();
+  if(id==="RESUME") return openResume();
+  if(id.startsWith("SEC")) return openSector(id);
+  if(FILES[id]) return openFile(id);
+}
+function isLost(id){ return LOST.files.includes(id); }
+function openFile(id){
+  const f=FILES[id]; if(!f) return;
+  if(isLost(id) && !state.unlocked){ return openSector("SEC04", id); }
+  openWindow({id:"f_"+id, title:`${f.name}`, icon:f.icon, w:760, h:Math.min(640,innerHeight-80),
+    status:`<span>${f.id} // ${f.cls}</span><span>${f.status}</span>`,
+    render:(b)=>{
+      const tagc={active:"t-active",unpub:"t-unpub",done:"t-done",pub:"t-pub"}[f.st]||"t-done";
+      const head=`<div class="dochead"><div class="fid">${f.id.startsWith("FILE_")?f.id:"REC_"+f.id} // ${esc(f.name)}</div><div class="tt">${esc(f.title)}</div>
+        <div class="meta"><span>CLASSIFICATION</span><span>${f.cls}</span><span>STATUS</span><span class="${tagc}">${f.status}</span>${(f.meta||[]).map(([k,v])=>`<span>${k}</span><span>${v}</span>`).join("")}</div></div>`;
+      if(state.seen.has(id) || f.sys){ b.innerHTML=`<div class="doc">${head}${f.body}</div>`; f.mount&&f.mount(b); markSeen(id); return; }
+      b.innerHTML=`<div class="decrypt"></div>`;
+      const d=b.firstChild; let p=0;
+      const tick=()=>{
+        p=Math.min(100,p+7+Math.random()*16|0); const n=Math.round(p/5);
+        d.innerHTML=`&gt; DECRYPTING ${esc(f.name)}<br><span class="bar">${"▓".repeat(n)}${"░".repeat(20-n)}</span> ${p}%<br><span class="dim">${[...Array(3)].map(()=>Math.random().toString(16).slice(2,10).toUpperCase()).join(" ")}</span>`;
+        if(p%3===0) sfx.key();
+        if(p<100) setTimeout(tick,45); else setTimeout(()=>{ b.innerHTML=`<div class="doc">${head}${f.body}</div>`; f.mount&&f.mount(b); const tt=b.querySelector(".tt"); scramble(tt,f.title,600); markSeen(id); },120);
+      };
+      tick();
+    }});
+}
+function fileTile(id){
+  const f=FILES[id]; const ext=f.name.split(".").pop().toUpperCase();
+  const tagc={active:"t-active",unpub:"t-unpub",done:"t-done",pub:"t-pub"}[f.st]||"t-done";
+  const tagtxt={active:"ACTIVE",unpub:"UNPUBLISHED",done:"COMPLETE",pub:"PUBLISHED"}[f.st];
+  return `<div class="file ${state.seen.has(id)?"seen":""}" data-id="${id}" tabindex="0" title="${esc(f.title)}">${ICON[f.icon]||ICON.txt}<div class="fn">${esc(f.name).replace(/([_.])/g,"$1<wbr>")}</div><div class="ft">${ext}</div><span class="tag ${tagc}">${tagtxt}</span></div>`;
+}
+function bindFiles(root){
+  const touch=matchMedia("(pointer:coarse)").matches;
+  root.querySelectorAll(".file").forEach(el=>{
+    el.addEventListener("click",()=>{ root.querySelectorAll(".file.sel").forEach(x=>x.classList.remove("sel")); el.classList.add("sel"); if(touch) openAny(el.dataset.id); });
+    el.addEventListener("dblclick",()=>openAny(el.dataset.id));
+    el.addEventListener("keydown",e=>{ if(e.key==="Enter") openAny(el.dataset.id); });
+  });
+}
+function openSector(sid, pending){
+  const s=SECTORS.find(x=>x.id===sid); if(!s) return;
+  const W=openWindow({id:"s_"+sid, title:`SECTOR_${s.no} // ${s.dir}`, icon:s.locked&&!state.unlocked?"lock":"folder", w:780, h:600,
+    status:`<span>${s.files.length} object(s)</span><span>${s.locked?(state.unlocked?"ACCESS GRANTED":"RESTRICTED"):"READ-ONLY"}</span>`,
+    render:(b,W)=>{ W.pending=pending; renderSector(s,b,W); }});
+  if(pending && W){ W.pending=pending; }
+}
+function renderSector(s,b,W){
+  if(s.locked && !state.unlocked){ return renderRestricted(s,b,W); }
+  const seenN=s.files.filter(id=>state.seen.has(id)).length;
+  b.innerHTML=`<div class="addr"><span>ADDR</span><span class="path">C:\\ARCHIVE\\PS-07\\SECTOR_${s.no}_${s.dir}\\</span><span>${seenN}/${s.files.length}</span></div>
+    <div class="blurb">${s.blurb}</div>
+    ${s.id==="SEC04"?`<div class="escaped">▲ 1 FILE ESCAPED: ${H.x("FILE_064","SELF_HEALING.pub")} was accepted at ICCSDI 2026 and invited to Springer Nature.</div>`:""}
+    <div class="files">${s.files.map(fileTile).join("")}</div>`;
+  bindFiles(b);
+  if(W && W.pending){ const p=W.pending; W.pending=null; setTimeout(()=>openFile(p),250); }
+}
+function renderRestricted(s,b,W){
+  const n=String(s.files.length).padStart(2,"0");
+  b.innerHTML=`<div class="restrict"><div><pre id="rtext"></pre><div class="btns" style="display:none"><button class="y">[ Y ] ACCESS</button><button class="n">[ N ]</button></div></div></div>`;
+  const pre=b.querySelector("#rtext"); pre.removeAttribute("id");
+  const lines=[
+`████████████████████████████`,
+``,
+`     RESTRICTED ARCHIVE`,
+``,
+`     ${n} UNPUBLISHED FILES`,
+``,
+`     STATUS:`,
+`     ▓▓▓▓▓▓░░░░`,
+``,
+`     Some research never`,
+`     reached publication.`,
+``,
+`     It still happened.`,
+``,
+`> ACCESS?`];
+  let i=0; (function next(){ if(i<lines.length){ pre.textContent+=(i?"\n":"")+lines[i]; if(lines[i]) sfx.key(); i++; setTimeout(next,reduce?0:70);} else { const bt=b.querySelector(".btns"); bt.style.display="flex"; bt.querySelector(".y").focus({preventScroll:true}); } })();
+  b.querySelector(".y").onclick=()=>grantAccess(s,b,W);
+  b.querySelector(".n").onclick=()=>{ sfx.err(); pre.textContent+="\n\nACCESS DECLINED.\nThe archive remembers."; b.querySelector(".btns").style.display="none"; setTimeout(()=>closeWin(W.id),1400); };
+}
+function grantAccess(s,b,W){
+  b.innerHTML=`<div class="decrypt"></div>`; const d=b.firstChild; let p=0;
+  const steps=["BYPASSING SECTOR LOCK","REBUILDING FILE TABLE","RESTORING DRAFTS","ACCESS GRANTED"];
+  (function t(){ p=Math.min(100,p+5+(Math.random()*9|0)); const n=Math.round(p/5);
+    d.innerHTML=`&gt; ${steps[Math.min(3,Math.floor(p/34))]}<br><span class="bar">${"▓".repeat(n)}${"░".repeat(20-n)}</span> ${p}%`; sfx.key();
+    if(p<100) setTimeout(t,50); else { state.unlocked=true; store.set("unlocked",true); sfx.ok(); glitch(); refreshLockIcon(); buildMenu();
+      const ti=W.el.querySelector(".titlebar svg"); if(ti) ti.outerHTML=ICON.unlock;
+      const st=W.el.querySelector(".status span:last-child"); if(st) st.textContent="ACCESS GRANTED";
+      setTimeout(()=>renderSector(s,b,W),350); } })();
+}
+function openResume(){
+  openWindow({id:"resume",title:"RESUME.pdf",icon:"pdf",w:520,h:360,render:b=>{
+    b.innerHTML=`<div class="doc"><div class="dochead"><div class="fid">DOC // RESUME.pdf</div><div class="tt">The 2-page version</div>
+    <div class="meta"><span>FORMAT</span><span>PDF</span><span>FOR</span><span>people short on time</span></div></div>
+    ${H.p("Everything in this archive, compressed to two pages.")}
+    <p style="margin-top:14px"><a href="${CONFIG.resume}" target="_blank" rel="noopener">→ OPEN RESUME.pdf</a></p>
+    <p><a href="${CONFIG.resume}" download>→ DOWNLOAD</a></p></div>`; }});
+}
+function openTransmit(){
+  openWindow({id:"transmit",title:"TRANSMIT.exe",icon:"signal",w:560,h:430,render:b=>{
+    b.innerHTML=`<div class="doc"><div class="dochead"><div class="fid">UPLINK // NODE PS-07</div><div class="tt">OPEN A TRANSMISSION</div>
+    <div class="meta"><span>SIGNAL</span><span class="amber">WEAK BUT STABLE</span><span>RESPONSE</span><span>researcher is listening</span></div></div>
+    ${H.kv([["EMAIL",`<a href="mailto:${CONFIG.email}">${CONFIG.email}</a>`],["LINKEDIN",H.a(CONFIG.linkedin,"linkedin.com/in/pari-sharma-b045991b2")],["GITHUB",H.a(CONFIG.github,"github.com/PariS-x")],["BASE","Mumbai, India"],["RESUME",`<a href="${CONFIG.resume}" target="_blank" rel="noopener">RESUME.pdf</a>`]])}
+    ${H.p("Robotics, AI, research, or a moonshot that needs someone who'll also pick up the soldering iron: send a signal.")}</div>`; }});
+}
+function openTrash(){
+  openWindow({id:"trash",title:"BURNT_DATA",icon:"trash",w:520,h:340,status:"<span>2 object(s)</span><span>PARTIALLY INCINERATED</span>",render:b=>{
+    b.innerHTML=`<div class="addr"><span>ADDR</span><span class="path">C:\\ARCHIVE\\PS-07\\BURNT_DATA\\</span></div><div class="files">${["SIGNALQUEST","HOPE"].map(fileTile).join("")}</div>`; bindFiles(b); }});
+}
+function shutdown(){
+  Object.keys(state.wins).forEach(closeWin);
+  const o=$("#off"); o.style.display="flex"; o.innerHTML=`<div>IT IS NOW SAFE TO TURN OFF<br>YOUR ARCHIVE.<br><br><span class="dim" style="font-size:.7em">(click to reboot)</span></div>`;
+  sfx.close(); o.onclick=()=>{ o.style.display="none"; glitch(); };
+}
+
+/* ============================================================
+   TERMINAL
+============================================================ */
+function openTerminal(){
+  const W=openWindow({id:"term",title:"TERMINAL.exe — PS-07",icon:"term",w:700,h:440,render:(b,W)=>{
+    b.style.overflow="hidden";
+    b.innerHTML=`<div class="term"><div class="out"></div><div class="in"><span class="pr">PS-07:\\ARCHIVE&gt;</span><input spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Terminal input"></div></div>`;
+    const term=b.firstChild, out=term.querySelector(".out"), inp=term.querySelector("input"), pr=term.querySelector(".pr");
+    let cwd=null; const hist=[]; let hi=0;
+    const say=(t,cls="")=>{ const d=document.createElement("div"); d.className="ln "+cls; d.innerHTML=t; out.appendChild(d); term.scrollTop=term.scrollHeight; };
+    W.onfocus=()=>setTimeout(()=>inp.focus({preventScroll:true}),0);
+    term.addEventListener("click",()=>inp.focus());
+    const setCwd=s=>{ cwd=s; pr.innerHTML = "PS-07:\\ARCHIVE"+(s?"\\"+s.dir:"")+"&gt;"; };
+    const secBy=a=>{ a=(a||"").toLowerCase().replace(/^sector[_ ]?/,""); return SECTORS.find(s=>s.no===a.padStart(2,"0")||s.dir.toLowerCase()===a||s.dir.toLowerCase().startsWith(a)&&a.length>2||s.id.toLowerCase()===a); };
+    const fileBy=a=>{ a=(a||"").toLowerCase(); return Object.values(FILES).find(f=>f.name.toLowerCase()===a||f.id.toLowerCase()===a||f.name.toLowerCase().split(".")[0]===a); };
+    const C={
+      help(){ say(
+`<span class="amber">AVAILABLE COMMANDS</span>
+  ls [sector]        list sectors, or files in a sector
+  cd &lt;sector&gt;        enter a sector   (cd 01, cd lost_papers, cd ..)
+  open &lt;file&gt;        open a file      (open nazakat, open file_023)
+  cat &lt;file&gt;         print a file here
+  access             unlock sector 04 // LOST PAPERS
+  whoami             researcher summary
+  status             archive recovery status
+  contact            open a transmission
+  resume             the 2-page version
+  tree               full archive map
+  clear              clear screen`); },
+      ls(a){ const s=a?secBy(a):cwd;
+        if(!s){ SECTORS.forEach(x=>say(`  <span class="amber">${x.no}</span>  ${x.dir.padEnd(22," ")} ${x.files.length} files ${x.locked&&!state.unlocked?'<span class="red">[LOCKED]</span>':""}`)); say(`  <span class="dim">--  README.txt  RESUME.pdf  TRANSMIT.exe</span>`); return; }
+        if(s.locked&&!state.unlocked){ say(`<span class="red">ACCESS DENIED.</span> sector 04 is restricted. type <b>access</b>.`); sfx.err(); return; }
+        s.files.forEach(id=>{ const f=FILES[id]; say(`  ${state.seen.has(id)?'<span class="dim">✓</span>':" "} ${f.name.padEnd(24," ")} <span class="dim">${f.status}</span>`); }); },
+      cd(a){ if(!a||a===".."||a==="/"||a==="\\"){ setCwd(null); return; } const s=secBy(a); if(!s){ say(`no such sector: ${esc(a)}`); sfx.err(); return; } if(s.locked&&!state.unlocked){ say(`<span class="red">ACCESS DENIED.</span> type <b>access</b> first.`); sfx.err(); return; } setCwd(s); C.ls(); },
+      open(a){ if(!a){ say("usage: open &lt;file&gt;"); return; } const s=secBy(a); if(s&&!fileBy(a)){ openSector(s.id); say(`opening sector ${s.no}...`); return; }
+        const f=fileBy(a); if(!f){ say(`file not found: ${esc(a)}`); sfx.err(); return; }
+        if(isLost(f.id)&&!state.unlocked){ say(`<span class="red">RESTRICTED FILE.</span> type <b>access</b>.`); sfx.err(); return; }
+        say(`decrypting ${f.name}...`); openFile(f.id); },
+      cat(a){ const f=fileBy(a); if(!f){ say(`file not found: ${esc(a||"")}`); sfx.err(); return; } if(isLost(f.id)&&!state.unlocked){ say(`<span class="red">RESTRICTED FILE.</span> type <b>access</b>.`); sfx.err(); return; }
+        const tmp=document.createElement("div"); tmp.innerHTML=f.body.replace(/<h3[^>]*>/g,"\n").replace(/<\/h3>/g,"\n").replace(/<li>/g,"\n  - ").replace(/<\/p>/g,"\n").replace(/<tr>/g,"\n").replace(/<\/t[dh]>/g,"   ");
+        say(`<span class="amber">== ${esc(f.title)} ==</span>\n<span class="dim">${f.status}</span>\n${esc(tmp.textContent.replace(/\n{3,}/g,"\n\n").trim())}`); markSeen(f.id); },
+      access(){ if(state.unlocked){ say("sector 04 already open."); return; } say("requesting clearance..."); setTimeout(()=>{ state.unlocked=true; store.set("unlocked",true); refreshLockIcon(); buildMenu(); glitch(); sfx.ok(); say(`<span class="cyan">ACCESS GRANTED.</span> ${LOST.files.length} unpublished files restored. try: <b>cd lost_papers</b>`); const w=state.wins["s_SEC04"]; if(w) renderSector(LOST,w.body,w); },700); },
+      whoami(){ say(
+`<span class="bright">${CONFIG.name}</span>
+B.Tech Computer Engineering, NMIMS MPSTME Mumbai (final year, CGPA 3.68)
+Robotics + AI + embedded systems. Builds autonomy for places people can't go.
+Team AUV (3rd, UVDC 2025) · HITLAB research · ICCSDI 2026 first author
+long-term: autonomous science for planetary exploration`); },
+      status(){ const p=pct(); say(`ARCHIVE INTEGRITY  ${"█".repeat(Math.round(p/10))}${"░".repeat(10-Math.round(p/10))}  ${p}%\nFILES RECOVERED    ${RECOVERABLE.filter(i=>state.seen.has(i)).length}/${RECOVERABLE.length}\nSECTOR 04          ${state.unlocked?"OPEN":'<span class="red">LOCKED</span>'}\nGLOBAL NETWORK     ${$("#netpct").textContent}`); },
+      contact(){ openTransmit(); say(`${CONFIG.email}\n<a href="${CONFIG.linkedin}" target="_blank" rel="noopener">${CONFIG.linkedin}</a>\n<a href="${CONFIG.github}" target="_blank" rel="noopener">${CONFIG.github}</a>`); },
+      resume(){ openResume(); say(`<a href="${CONFIG.resume}" target="_blank" rel="noopener">${CONFIG.resume}</a>`); },
+      tree(){ let t="C:\\ARCHIVE\\PS-07\n"; SECTORS.forEach((s,i)=>{ const last=i===SECTORS.length-1; t+=`${last?"└─":"├─"} ${s.no}_${s.dir}${s.locked&&!state.unlocked?"  [LOCKED]":""}\n`; if(!(s.locked&&!state.unlocked)) s.files.forEach((id,j)=>{ t+=`${last?"   ":"│  "}${j===s.files.length-1?"└─":"├─"} ${FILES[id].name}\n`; }); }); say(esc(t)); },
+      clear(){ out.innerHTML=""; },
+      cls(){ out.innerHTML=""; },
+      dir(a){ C.ls(a); },
+      date(){ say(new Date().toString().replace(/\d{4}/,"2089")); },
+      sudo(){ say("nice try. there is no root left. there is barely a network."); sfx.err(); },
+      rm(){ say("the internet already deleted itself. this archive stays."); sfx.err(); },
+      exit(){ closeWin("term"); },
+      hello(){ say("...hello? is someone actually out there?"); },
+      ping(){ say("PING global-network ... 41% of packets returned. still here."); },
+      glitch(){ glitch(); say("̷̢̛s̶̨i̵g̴n̷a̶l̵ ̶d̷e̸g̶r̵a̷d̴e̵d̶"); }
+    };
+    const names=Object.keys(C);
+    const run=raw=>{ const line=raw.trim(); say(`<span class="pr">${pr.innerHTML}</span> ${esc(line)}`); if(!line) return;
+      hist.push(line); hi=hist.length; const [cmd,...rest]=line.split(/\s+/); const arg=rest.join(" ");
+      const fn=C[cmd.toLowerCase()]; if(fn) fn(arg); else { const f=fileBy(cmd)||null; if(f){ C.open(cmd); } else { say(`'${esc(cmd)}' is not recognised. type <b>help</b>.`); sfx.err(); } } };
+    inp.addEventListener("keydown",e=>{
+      if(e.key==="Enter"){ run(inp.value); inp.value=""; }
+      else if(e.key==="ArrowUp"){ if(hi>0){ hi--; inp.value=hist[hi]; } e.preventDefault(); }
+      else if(e.key==="ArrowDown"){ if(hi<hist.length-1){ hi++; inp.value=hist[hi]; } else { hi=hist.length; inp.value=""; } e.preventDefault(); }
+      else if(e.key==="Tab"){ e.preventDefault(); const parts=inp.value.split(/\s+/); const last=(parts[parts.length-1]||"").toLowerCase();
+        const pool = parts.length===1 ? names : [...SECTORS.map(s=>s.dir.toLowerCase()), ...Object.values(FILES).map(f=>f.name.toLowerCase())];
+        const m=pool.filter(x=>x.startsWith(last)); if(m.length===1){ parts[parts.length-1]=m[0]; inp.value=parts.join(" ")+(parts.length===1?" ":""); } else if(m.length>1) say(m.join("   "),"dim"); }
+      else sfx.key();
+    });
+    say(`<span class="bright">LAST ARCHIVE OS 0.89</span>  <span class="dim">// node PS-07 // shell recovered</span>\ntype <b>help</b> for commands. try <b>whoami</b>, <b>tree</b> or <b>access</b>.\n`);
+    setTimeout(()=>inp.focus({preventScroll:true}),50);
+  }});
+}
+
+/* global keys */
+document.addEventListener("keydown",e=>{
+  if(!state.booted) return;
+  if(e.key==="Escape"){ toggleStart(false); }
+  if(e.key==="`" && document.activeElement.tagName!=="INPUT"){ e.preventDefault(); openTerminal(); }
+});
+})();
 </script>
 </body>
 </html>
